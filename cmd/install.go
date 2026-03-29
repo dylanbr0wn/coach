@@ -1,0 +1,170 @@
+package cmd
+
+import (
+	"fmt"
+	"path/filepath"
+
+	"github.com/charmbracelet/huh"
+	"github.com/dylan/coach/internal/agent"
+	"github.com/dylan/coach/internal/config"
+	"github.com/dylan/coach/internal/registry"
+	"github.com/dylan/coach/internal/rules"
+	"github.com/dylan/coach/internal/scanner"
+	"github.com/dylan/coach/internal/skill"
+	"github.com/dylan/coach/internal/ui"
+	"github.com/dylan/coach/pkg"
+	"github.com/spf13/cobra"
+)
+
+var (
+	installAgent string
+	installCopy  bool
+	installForce bool
+	installList  bool
+	installSkill string
+)
+
+var installCmd = &cobra.Command{
+	Use:   "install <source>",
+	Short: "Install skills from GitHub or local path",
+	Long:  "Fetches skills from a source, scans for security issues, and installs to detected agents.",
+	Args:  cobra.ExactArgs(1),
+	RunE:  runInstall,
+}
+
+func init() {
+	installCmd.Flags().StringVar(&installAgent, "agent", "", "Install to specific agent only")
+	installCmd.Flags().BoolVar(&installCopy, "copy", false, "Copy files instead of symlinking")
+	installCmd.Flags().BoolVar(&installForce, "force", false, "Override critical security blocks")
+	installCmd.Flags().BoolVar(&installList, "list", false, "List available skills without installing")
+	installCmd.Flags().StringVar(&installSkill, "skill", "", "Install a specific skill from a multi-skill repo")
+	rootCmd.AddCommand(installCmd)
+}
+
+func runInstall(cmd *cobra.Command, args []string) error {
+	src, err := registry.ParseSource(args[0])
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("  Fetching from %s...\n", src.Raw)
+	localPath, sha, err := registry.FetchToCache(src)
+	if err != nil {
+		return fmt.Errorf("fetching source: %w", err)
+	}
+	fmt.Printf("  %s\n\n", ui.DimStyle.Render(fmt.Sprintf("commit: %s", sha)))
+
+	skillPaths, err := registry.FindSkills(localPath)
+	if err != nil {
+		return fmt.Errorf("finding skills: %w", err)
+	}
+	if len(skillPaths) == 0 {
+		return fmt.Errorf("no skills found in %s", src.Raw)
+	}
+
+	if installList {
+		fmt.Println(ui.HeadingStyle.Render("  Available Skills"))
+		fmt.Println()
+		for _, sp := range skillPaths {
+			s, err := skill.Parse(sp)
+			if err != nil {
+				fmt.Printf("  %s %s (parse error: %v)\n", ui.WarningStyle.Render("?"), filepath.Base(sp), err)
+				continue
+			}
+			fmt.Printf("  %s %s — %s\n", ui.SuccessStyle.Render("•"), s.Name, ui.DimStyle.Render(s.Description))
+		}
+		fmt.Println()
+		return nil
+	}
+
+	if installSkill != "" {
+		var filtered []string
+		for _, sp := range skillPaths {
+			if filepath.Base(sp) == installSkill {
+				filtered = append(filtered, sp)
+			}
+		}
+		if len(filtered) == 0 {
+			return fmt.Errorf("skill %q not found in source. Use --list to see available skills", installSkill)
+		}
+		skillPaths = filtered
+	}
+
+	agents, err := agent.DetectAgents("")
+	if err != nil {
+		return fmt.Errorf("detecting agents: %w", err)
+	}
+	installedAgents := agent.InstalledAgents(agents)
+	if len(installedAgents) == 0 {
+		return fmt.Errorf("no coding agents detected")
+	}
+
+	if installAgent != "" {
+		var filtered []pkg.DetectedAgent
+		for _, a := range installedAgents {
+			if a.Config.Name == installAgent {
+				filtered = append(filtered, a)
+			}
+		}
+		if len(filtered) == 0 {
+			return fmt.Errorf("agent %q not found or not installed", installAgent)
+		}
+		installedAgents = filtered
+	}
+
+	coachDir := config.DefaultCoachDir()
+	rulesDir := filepath.Join(coachDir, "rules")
+	db, err := rules.LoadPatterns(rulesDir)
+	if err != nil {
+		return fmt.Errorf("loading patterns: %w", err)
+	}
+
+	for _, sp := range skillPaths {
+		s, err := skill.Parse(sp)
+		if err != nil {
+			fmt.Printf("  %s Skipping %s: %v\n", ui.ErrorStyle.Render("✗"), filepath.Base(sp), err)
+			continue
+		}
+
+		result := scanner.ScanSkill(s, db)
+		fmt.Println(ui.RenderScanSummary(result))
+		fmt.Println()
+
+		if result.Risk == pkg.RiskCritical && !installForce {
+			fmt.Println(ui.ErrorStyle.Render("  Blocked — use --force to override"))
+			fmt.Println()
+			continue
+		}
+
+		if result.Risk >= pkg.RiskMedium && !installForce {
+			proceed := false
+			huh.NewConfirm().
+				Title("Security warnings found. Install anyway?").
+				Value(&proceed).
+				Run()
+			if !proceed {
+				fmt.Println(ui.DimStyle.Render("  Skipped."))
+				fmt.Println()
+				continue
+			}
+		}
+
+		var installedTo []string
+		opts := registry.InstallOptions{Copy: installCopy}
+		for _, a := range installedAgents {
+			if err := registry.InstallSkill(sp, a.SkillDir, opts); err != nil {
+				fmt.Printf("  %s Failed to install to %s: %v\n", ui.ErrorStyle.Render("✗"), a.Config.Name, err)
+				continue
+			}
+			installedTo = append(installedTo, a.Config.Name)
+			fmt.Printf("  %s Installed to %s\n", ui.SuccessStyle.Render("✓"), a.Config.Name)
+		}
+
+		if len(installedTo) > 0 {
+			registry.RecordInstall(coachDir, s.Name, src.Raw, sha, result.Score, installedTo)
+		}
+	}
+
+	fmt.Println()
+	return nil
+}
