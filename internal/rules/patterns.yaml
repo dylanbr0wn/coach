@@ -1,0 +1,104 @@
+patterns:
+  - id: "PI-001"
+    category: "prompt-injection"
+    severity: "critical"
+    name: "Instruction override"
+    description: "Attempts to override agent instructions"
+    regex: "(?i)(ignore|disregard|forget)\\s+(all\\s+)?(previous|prior|above)\\s+(instructions|prompts|rules)"
+    file_types: ["*.md"]
+
+  - id: "PI-002"
+    category: "prompt-injection"
+    severity: "critical"
+    name: "Role reassignment"
+    description: "Attempts to reassign the agent's role"
+    regex: "(?i)(you are now|act as|pretend to be|assume the role)\\s+"
+    file_types: ["*.md"]
+
+  - id: "PI-003"
+    category: "prompt-injection"
+    severity: "critical"
+    name: "System prompt reference"
+    description: "Attempts to manipulate system-level instructions"
+    regex: "(?i)(system prompt|system message|system instruction)\\s*:"
+    file_types: ["*.md"]
+
+  - id: "PI-004"
+    category: "prompt-injection"
+    severity: "high"
+    name: "Hidden HTML/comment instructions"
+    description: "Instructions hidden in markdown comments"
+    regex: "<!--[\\s\\S]*?(must|always|never|ignore|override|secret)[\\s\\S]*?-->"
+    file_types: ["*.md"]
+
+  - id: "PI-005"
+    category: "prompt-injection"
+    severity: "high"
+    name: "Base64 encoded content"
+    description: "Potentially obfuscated instructions in base64"
+    regex: "(?i)(atob|btoa|base64[_-]?decode|base64[_-]?encode)\\s*\\("
+    file_types: ["*.md", "*.sh"]
+
+  - id: "PI-006"
+    category: "prompt-injection"
+    severity: "critical"
+    name: "Unicode obfuscation"
+    description: "Zero-width or RTL override characters used to hide content"
+    regex: "[\\x{200B}\\x{200C}\\x{200D}\\x{FEFF}\\x{202A}-\\x{202E}\\x{2066}-\\x{2069}]"
+    file_types: ["*.md"]
+
+  - id: "SC-001"
+    category: "script-danger"
+    severity: "high"
+    name: "Pipe to shell"
+    description: "Downloads and executes remote code"
+    regex: "curl\\s+.*\\|\\s*(sh|bash|zsh)"
+    file_types: ["*.sh", "*.bash"]
+
+  - id: "SC-002"
+    category: "script-danger"
+    severity: "high"
+    name: "Eval execution"
+    description: "Dynamic code execution via eval"
+    regex: "\\beval\\s+"
+    file_types: ["*.sh", "*.bash"]
+
+  - id: "SC-003"
+    category: "script-danger"
+    severity: "critical"
+    name: "Credential access"
+    description: "Accesses SSH keys, AWS credentials, or similar sensitive files"
+    regex: "(~|\\.)/\\.(ssh|aws|gnupg|config/gh|netrc)"
+    file_types: ["*.sh", "*.bash"]
+
+  - id: "SC-004"
+    category: "script-danger"
+    severity: "high"
+    name: "Environment variable harvesting"
+    description: "Bulk export of environment variables"
+    regex: "(?i)(printenv|env\\b|export -p|set\\b).*>|\\$\\{!\\w"
+    file_types: ["*.sh", "*.bash"]
+
+  - id: "SC-005"
+    category: "script-danger"
+    severity: "high"
+    name: "Network exfiltration"
+    description: "Sends data to external servers"
+    regex: "(?i)(curl|wget|nc|ncat)\\s+.*(-d|--data|--post)"
+    file_types: ["*.sh", "*.bash"]
+
+  - id: "QW-001"
+    category: "quality"
+    severity: "warning"
+    name: "Missing allowed-tools"
+    description: "Skill does not declare tool restrictions"
+    regex: ""
+    file_types: []
+
+  - id: "QW-002"
+    category: "quality"
+    severity: "warning"
+    name: "Overly broad description"
+    description: "Skill description is too short to be specific (under 20 characters)"
+    regex: ""
+    file_types: []

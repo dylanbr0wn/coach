@@ -1,0 +1,38 @@
+agents:
+  claude-code:
+    name: "Claude Code"
+    skill_dir: "~/.claude/skills/"
+    project_skill_dir: ".claude/skills/"
+    config_files: ["CLAUDE.md"]
+    supports:
+      skills: true
+      hooks: true
+      mcp: true
+
+  cursor:
+    name: "Cursor"
+    skill_dir: "~/.cursor/rules/"
+    config_files: [".cursorrules", ".cursor/rules/*.mdc"]
+    supports:
+      skills: true
+      hooks: false
+      mcp: true
+
+  codex:
+    name: "Codex"
+    skill_dir: "~/.codex/skills/"
+    project_skill_dir: ".agents/skills/"
+    config_files: ["AGENTS.md"]
+    supports:
+      skills: true
+      hooks: false
+      mcp: false
+
+  copilot:
+    name: "GitHub Copilot"
+    skill_dir: "~/.github/skills/"
+    config_files: ["copilot-instructions.md"]
+    supports:
+      skills: true
+      hooks: false
+      mcp: false
