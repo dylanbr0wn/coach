@@ -85,6 +85,18 @@ func runSync(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("no configured agents detected (looking for: %s)", strings.Join(cfg.DistributeTo, ", "))
 	}
 
+	// Ensure agent skill directories exist for configured targets.
+	// This handles the case where the agent is installed but its
+	// skill directory hasn't been created yet.
+	for i := range targets {
+		if !targets[i].Installed {
+			if err := os.MkdirAll(targets[i].SkillDir, 0o755); err != nil {
+				return fmt.Errorf("creating skill directory for %s: %w", targets[i].Config.Name, err)
+			}
+			targets[i].Installed = true
+		}
+	}
+
 	if syncDryRun {
 		fmt.Println(ui.HeadingStyle.Render("Dry run — would link:"))
 		fmt.Println()
