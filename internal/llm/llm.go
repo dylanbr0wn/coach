@@ -2,6 +2,7 @@ package llm
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
 )
 
@@ -16,13 +17,29 @@ func FindCLI(command string) (string, error) {
 }
 
 // BuildSingleShotArgs returns the CLI arguments for a single-shot (non-interactive) invocation.
-// The returned slice is: ["--print", "-p", userPrompt, "--system-prompt", systemPrompt]
-func BuildSingleShotArgs(cliName, systemPrompt, userPrompt string) []string {
+func BuildSingleShotArgs(systemPrompt, userPrompt string) []string {
 	return []string{"--print", "-p", userPrompt, "--system-prompt", systemPrompt}
 }
 
 // BuildInteractiveArgs returns the CLI arguments for an interactive session.
-// The returned slice is: ["--system-prompt", systemPrompt]
-func BuildInteractiveArgs(cliName, systemPrompt string) []string {
+func BuildInteractiveArgs(systemPrompt string) []string {
 	return []string{"--system-prompt", systemPrompt}
+}
+
+// RunSingleShot executes the LLM CLI in single-shot mode and returns the captured stdout.
+func RunSingleShot(cliPath, systemPrompt, userPrompt string) ([]byte, error) {
+	args := BuildSingleShotArgs(systemPrompt, userPrompt)
+	cmd := exec.Command(cliPath, args...)
+	cmd.Stderr = os.Stderr
+	return cmd.Output()
+}
+
+// RunInteractive executes the LLM CLI in interactive mode, connecting stdin/stdout/stderr.
+func RunInteractive(cliPath, systemPrompt string) error {
+	args := BuildInteractiveArgs(systemPrompt)
+	cmd := exec.Command(cliPath, args...)
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	return cmd.Run()
 }

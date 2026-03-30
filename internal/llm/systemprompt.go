@@ -5,6 +5,10 @@ import (
 	"strings"
 )
 
+// referenceSkill is the canonical skill-coach/SKILL.md embedded at build time.
+// Run "go generate ./internal/llm/" to refresh after editing skill-coach/SKILL.md.
+//
+//go:generate cp ../../skill-coach/SKILL.md reference_skill.md
 //go:embed reference_skill.md
 var referenceSkill string
 

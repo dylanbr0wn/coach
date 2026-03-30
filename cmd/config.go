@@ -109,7 +109,7 @@ func getConfigValue(configPath, key string) (string, error) {
 		return cfg.LLMCli, nil
 	case "default-scope":
 		return cfg.DefaultScope, nil
+	default:
+		return "", fmt.Errorf("unknown config key %q", key)
 	}
-
-	return "", nil
 }

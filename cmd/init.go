@@ -120,9 +120,15 @@ func runInitSkill(cmd *cobra.Command, args []string) error {
 	// Determine scope and target directory
 	scope := "global"
 	var dir string
+
+	workDir, err := os.Getwd()
+	if err != nil {
+		return fmt.Errorf("getting working directory: %w", err)
+	}
+
 	if initLocal {
 		scope = "local"
-		dir = filepath.Join(".coach", "skills", name)
+		dir = filepath.Join(workDir, ".coach", "skills", name)
 	} else if initGlobal {
 		scope = "global"
 		dir = filepath.Join(config.DefaultCoachDir(), "skills", name)
@@ -133,7 +139,7 @@ func runInitSkill(cmd *cobra.Command, args []string) error {
 		}
 		if cfg.DefaultScope == "local" {
 			scope = "local"
-			dir = filepath.Join(".coach", "skills", name)
+			dir = filepath.Join(workDir, ".coach", "skills", name)
 		} else {
 			scope = "global"
 			dir = filepath.Join(config.DefaultCoachDir(), "skills", name)

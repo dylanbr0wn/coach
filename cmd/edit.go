@@ -1,14 +1,13 @@
 package cmd
 
 import (
-	"bufio"
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
 	"io"
 	"os"
 	"os/exec"
-	"strings"
+	"path/filepath"
 
 	"github.com/dylanbr0wn/coach/internal/config"
 	"github.com/dylanbr0wn/coach/internal/resolve"
@@ -54,7 +53,7 @@ func runEdit(cmd *cobra.Command, args []string) error {
 	}
 
 	r := resolve.Resolver{
-		GlobalSkillsDir: coachDir + "/skills",
+		GlobalSkillsDir: filepath.Join(coachDir, "skills"),
 		WorkDir:         workDir,
 	}
 
@@ -100,7 +99,7 @@ func runEdit(cmd *cobra.Command, args []string) error {
 		s, err := skill.Parse(result.Dir)
 		if err != nil {
 			fmt.Println(ui.ErrorStyle.Render(fmt.Sprintf("Parse error: %v", err)))
-			if promptReopen() {
+			if ui.PromptYesNo("Re-open to fix? [Y/n] ") {
 				continue
 			}
 			return nil
@@ -113,7 +112,7 @@ func runEdit(cmd *cobra.Command, args []string) error {
 				fmt.Println(ui.ErrorStyle.Render("  ✗ " + issue))
 			}
 			fmt.Println()
-			if promptReopen() {
+			if ui.PromptYesNo("Re-open to fix? [Y/n] ") {
 				continue
 			}
 			return nil
@@ -161,17 +160,6 @@ func fileChanged(path, previousHash string) (bool, error) {
 		return false, err
 	}
 	return current != previousHash, nil
-}
-
-// promptReopen asks the user whether to re-open the editor.
-func promptReopen() bool {
-	fmt.Print("Re-open to fix? [Y/n] ")
-	scanner := bufio.NewScanner(os.Stdin)
-	if !scanner.Scan() {
-		return false
-	}
-	answer := strings.TrimSpace(strings.ToLower(scanner.Text()))
-	return answer == "" || answer == "y" || answer == "yes"
 }
 
 // openEditor opens the file at path in the given editor, connecting stdin/stdout/stderr.

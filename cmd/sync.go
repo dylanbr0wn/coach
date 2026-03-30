@@ -89,17 +89,20 @@ func runSync(cmd *cobra.Command, args []string) error {
 		fmt.Println(ui.HeadingStyle.Render("Dry run — would link:"))
 		fmt.Println()
 		for _, sk := range skills {
-			scopeLabel := "global"
-			if sk.Scope == resolve.ScopeLocal {
-				scopeLabel = "local"
-			}
 			for _, t := range targets {
-				linkPath := filepath.Join(t.SkillDir, sk.Name)
-				fmt.Printf("  %s  %s → %s  %s\n",
+				if !t.Installed {
+					fmt.Printf("  %s  %s → %s %s\n",
+						ui.DimStyle.Render("-"),
+						sk.Name,
+						t.Config.Name,
+						ui.DimStyle.Render("(skipped — not installed)"),
+					)
+					continue
+				}
+				fmt.Printf("  %s  %s → %s\n",
 					ui.SuccessStyle.Render("✓"),
 					sk.Name,
-					linkPath,
-					ui.DimStyle.Render("("+scopeLabel+")"),
+					t.Config.Name,
 				)
 			}
 		}

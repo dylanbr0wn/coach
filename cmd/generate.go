@@ -1,10 +1,9 @@
 package cmd
 
 import (
-	"bufio"
 	"fmt"
 	"os"
-	"os/exec"
+	"path/filepath"
 	"strings"
 
 	"github.com/dylanbr0wn/coach/internal/config"
@@ -73,7 +72,7 @@ func runGenerate(cmd *cobra.Command, args []string) error {
 	}
 
 	r := resolve.Resolver{
-		GlobalSkillsDir: coachDir + "/skills",
+		GlobalSkillsDir: filepath.Join(coachDir, "skills"),
 		WorkDir:         workDir,
 	}
 
@@ -106,7 +105,7 @@ func runGenerate(cmd *cobra.Command, args []string) error {
 			return fmt.Errorf("creating skill directory: %w", mkErr)
 		}
 		skillDir = targetDir
-		skillPath = skillDir + "/SKILL.md"
+		skillPath = filepath.Join(skillDir, "SKILL.md")
 		placeholder := fmt.Sprintf("---\nname: %s\ndescription: TODO — describe what this skill does\n---\n\n# %s\n\nTODO — add skill instructions here.\n", name, name)
 		if writeErr := os.WriteFile(skillPath, []byte(placeholder), 0o644); writeErr != nil {
 			return fmt.Errorf("creating placeholder skill: %w", writeErr)
@@ -125,80 +124,50 @@ func runGenerate(cmd *cobra.Command, args []string) error {
 }
 
 func runSingleShot(cliPath, systemPrompt, userPrompt, skillPath, skillDir, skillName string) error {
-	// 1. Build args.
-	args := llm.BuildSingleShotArgs("", systemPrompt, userPrompt)
-
-	// 2. Run command, capture stdout.
-	cliCmd := exec.Command(cliPath, args...) //nolint:gosec
-	cliCmd.Stderr = os.Stderr
-
-	output, err := cliCmd.Output()
+	output, err := llm.RunSingleShot(cliPath, systemPrompt, userPrompt)
 	if err != nil {
 		return fmt.Errorf("LLM CLI error: %w", err)
 	}
 
-	// 3. Check for empty output.
 	result := strings.TrimSpace(string(output))
 	if result == "" {
 		return fmt.Errorf("LLM returned empty output")
 	}
 
-	// 4. Show output and prompt for acceptance.
 	fmt.Println()
 	fmt.Println(result)
 	fmt.Println()
-	fmt.Print("Accept changes? [Y/n] ")
 
-	scanner := bufio.NewScanner(os.Stdin)
-	if !scanner.Scan() {
-		fmt.Println("Aborted.")
-		return nil
-	}
-	answer := strings.TrimSpace(strings.ToLower(scanner.Text()))
-	if answer != "" && answer != "y" && answer != "yes" {
+	if !ui.PromptYesNo("Accept changes? [Y/n] ") {
 		fmt.Println("Discarded.")
 		return nil
 	}
 
-	// 5. Write to skillPath.
 	if err := os.WriteFile(skillPath, []byte(result+"\n"), 0o644); err != nil {
 		return fmt.Errorf("writing skill: %w", err)
 	}
 	fmt.Printf("%s Written to %s\n", ui.SuccessStyle.Render("✓"), skillPath)
 
-	// 6. Run lintAfterGenerate.
 	return lintAfterGenerate(skillDir, skillName)
 }
 
 func runInteractive(cliPath, systemPrompt, skillDir, skillName string) error {
-	// 1. Build args.
-	args := llm.BuildInteractiveArgs("", systemPrompt)
-
-	// 2. Set up command with full stdio.
-	cliCmd := exec.Command(cliPath, args...) //nolint:gosec
-	cliCmd.Stdin = os.Stdin
-	cliCmd.Stdout = os.Stdout
-	cliCmd.Stderr = os.Stderr
-
-	// 3. Print intro.
 	fmt.Printf("%s Starting interactive session for skill %q. Type your instructions.\n", ui.InfoStyle.Render("→"), skillName)
 	fmt.Printf("%s When done, the skill will be validated automatically.\n\n", ui.DimStyle.Render("hint"))
 
-	// 4. Run command.
-	if err := cliCmd.Run(); err != nil {
+	if err := llm.RunInteractive(cliPath, systemPrompt); err != nil {
 		return fmt.Errorf("LLM CLI exited with error: %w", err)
 	}
 
-	// 5. Run lintAfterGenerate.
 	return lintAfterGenerate(skillDir, skillName)
 }
 
 func lintAfterGenerate(skillDir, skillName string) error {
-	s, err := skill.Parse(skillDir)
-	if err != nil {
-		fmt.Println(ui.ErrorStyle.Render(fmt.Sprintf("✗ Parse error: %v", err)))
+	s, parseErr := skill.Parse(skillDir)
+	if parseErr != nil {
+		fmt.Println(ui.ErrorStyle.Render(fmt.Sprintf("✗ Parse error: %v", parseErr)))
 		fmt.Printf("  Run %s to fix manually.\n", ui.InfoStyle.Render("coach edit "+skillName))
-		return nil //nolint:nilerr // We surface the error via UI, not as a fatal return.
+		return nil
 	}
 
 	issues := skill.Validate(s)
