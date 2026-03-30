@@ -138,10 +138,12 @@ func runInstall(cmd *cobra.Command, args []string) error {
 
 		if result.Risk >= pkg.RiskMedium && !installForce {
 			proceed := false
-			huh.NewConfirm().
+			if err := huh.NewConfirm().
 				Title("Security warnings found. Install anyway?").
 				Value(&proceed).
-				Run()
+				Run(); err != nil {
+				return fmt.Errorf("confirmation prompt: %w", err)
+			}
 			if !proceed {
 				fmt.Println(ui.DimStyle.Render("  Skipped."))
 				fmt.Println()
@@ -161,7 +163,9 @@ func runInstall(cmd *cobra.Command, args []string) error {
 		}
 
 		if len(installedTo) > 0 {
-			registry.RecordInstall(coachDir, s.Name, src.Raw, sha, result.Score, installedTo)
+			if err := registry.RecordInstall(coachDir, s.Name, src.Raw, sha, result.Score, installedTo); err != nil {
+				fmt.Printf("  %s Failed to record install: %v\n", ui.ErrorStyle.Render("✗"), err)
+			}
 		}
 	}
 

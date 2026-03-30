@@ -16,7 +16,7 @@ type InstallOptions struct {
 	Force       bool
 }
 
-func InstallSkill(srcDir string, agentSkillDir string, opts InstallOptions) error {
+func InstallSkill(srcDir, agentSkillDir string, opts InstallOptions) error {
 	skillName := filepath.Base(srcDir)
 	destDir := filepath.Join(agentSkillDir, skillName)
 
@@ -31,14 +31,14 @@ func InstallSkill(srcDir string, agentSkillDir string, opts InstallOptions) erro
 		return fmt.Errorf("resolving source path: %w", err)
 	}
 
-	if err := os.MkdirAll(agentSkillDir, 0755); err != nil {
+	if err := os.MkdirAll(agentSkillDir, 0o755); err != nil {
 		return fmt.Errorf("creating agent skill directory: %w", err)
 	}
 
 	return os.Symlink(absSrc, destDir)
 }
 
-func RecordInstall(coachDir string, name string, source string, sha string, score int, agents []string) error {
+func RecordInstall(coachDir, name, source, sha string, score int, agents []string) error {
 	provenance, err := LoadProvenance(coachDir)
 	if err != nil {
 		provenance = &InstalledSkills{}

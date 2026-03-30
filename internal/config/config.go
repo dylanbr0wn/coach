@@ -33,7 +33,7 @@ func EnsureCoachDir(coachDir string) error {
 	subdirs := []string{"trust", "cache", "rules", "team"}
 	for _, sub := range subdirs {
 		path := filepath.Join(coachDir, sub)
-		if err := os.MkdirAll(path, 0755); err != nil {
+		if err := os.MkdirAll(path, 0o755); err != nil {
 			return fmt.Errorf("creating %s: %w", path, err)
 		}
 	}
@@ -67,5 +67,5 @@ func Save(coachDir string, cfg *Config) error {
 	if err != nil {
 		return fmt.Errorf("marshaling config: %w", err)
 	}
-	return os.WriteFile(configPath, data, 0644)
+	return os.WriteFile(configPath, data, 0o644)
 }

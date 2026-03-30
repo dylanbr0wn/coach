@@ -98,7 +98,7 @@ func copyRuleFiles(repoDir, rulesDir string) error {
 			continue
 		}
 
-		if err := os.WriteFile(dst, data, 0644); err != nil {
+		if err := os.WriteFile(dst, data, 0o644); err != nil {
 			return fmt.Errorf("writing %s: %w", f, err)
 		}
 		copied++

@@ -26,7 +26,9 @@ func TestEnsureCoachDir(t *testing.T) {
 func TestLoadConfig_DefaultsOnMissing(t *testing.T) {
 	tmpDir := t.TempDir()
 	coachDir := filepath.Join(tmpDir, ".coach")
-	EnsureCoachDir(coachDir)
+	if err := EnsureCoachDir(coachDir); err != nil {
+		t.Fatalf("EnsureCoachDir() error: %v", err)
+	}
 
 	cfg, err := Load(coachDir)
 	if err != nil {

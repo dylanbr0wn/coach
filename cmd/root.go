@@ -32,7 +32,7 @@ func init() {
 func customHelp(cmd *cobra.Command, args []string) {
 	// Only customize help for the root command; subcommands get default help.
 	if cmd != rootCmd {
-		cmd.Usage()
+		_ = cmd.Usage()
 		return
 	}
 

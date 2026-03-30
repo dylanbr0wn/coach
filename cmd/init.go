@@ -110,7 +110,7 @@ func runInitSkill(cmd *cobra.Command, args []string) error {
 	}
 
 	dir := name
-	if err := os.MkdirAll(dir, 0755); err != nil {
+	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return fmt.Errorf("creating directory: %w", err)
 	}
 
@@ -126,18 +126,24 @@ func runInitSkill(cmd *cobra.Command, args []string) error {
 
 	skillContent := generateSkillMD(name, description, license, toolsList)
 	skillPath := filepath.Join(dir, "SKILL.md")
-	if err := os.WriteFile(skillPath, []byte(skillContent), 0644); err != nil {
+	if err := os.WriteFile(skillPath, []byte(skillContent), 0o644); err != nil {
 		return fmt.Errorf("writing SKILL.md: %w", err)
 	}
 
 	if includeTests {
-		os.MkdirAll(filepath.Join(dir, "tests"), 0755)
+		if err := os.MkdirAll(filepath.Join(dir, "tests"), 0o755); err != nil {
+			return fmt.Errorf("creating tests directory: %w", err)
+		}
 	}
 	if includeScripts {
-		os.MkdirAll(filepath.Join(dir, "scripts"), 0755)
+		if err := os.MkdirAll(filepath.Join(dir, "scripts"), 0o755); err != nil {
+			return fmt.Errorf("creating scripts directory: %w", err)
+		}
 	}
 	if includeRefs {
-		os.MkdirAll(filepath.Join(dir, "references"), 0755)
+		if err := os.MkdirAll(filepath.Join(dir, "references"), 0o755); err != nil {
+			return fmt.Errorf("creating references directory: %w", err)
+		}
 	}
 
 	successMsg := lipgloss.NewStyle().Bold(true).Foreground(ui.Green).Render("Skill scaffolded!")

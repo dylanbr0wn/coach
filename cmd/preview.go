@@ -72,7 +72,7 @@ func runPreview(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func renderFileTree(dir string, indent string) {
+func renderFileTree(dir, indent string) {
 	entries, err := os.ReadDir(dir)
 	if err != nil {
 		return

@@ -80,7 +80,7 @@ func ParseSource(input string) (*Source, error) {
 	return nil, fmt.Errorf("cannot parse source: %s (use owner/repo, a URL, or a local path)", input)
 }
 
-func FetchToCache(src *Source) (string, string, error) {
+func FetchToCache(src *Source) (localPath string, commitSHA string, err error) {
 	if src.Type == SourceLocal {
 		absPath, err := filepath.Abs(src.Path)
 		if err != nil {
@@ -91,7 +91,9 @@ func FetchToCache(src *Source) (string, string, error) {
 
 	coachDir := config.DefaultCoachDir()
 	cacheDir := filepath.Join(coachDir, "cache")
-	config.EnsureCoachDir(coachDir)
+	if err := config.EnsureCoachDir(coachDir); err != nil {
+		return "", "", fmt.Errorf("ensuring coach dir: %w", err)
+	}
 
 	repoDir := src.Owner + "_" + src.Repo
 	if src.Type == SourceURL {
@@ -104,7 +106,7 @@ func FetchToCache(src *Source) (string, string, error) {
 		if err == nil {
 			w, err := repo.Worktree()
 			if err == nil {
-				w.Pull(&git.PullOptions{Force: true})
+				_ = w.Pull(&git.PullOptions{Force: true})
 			}
 			head, err := repo.Head()
 			if err == nil {

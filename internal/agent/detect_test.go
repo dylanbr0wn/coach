@@ -9,7 +9,7 @@ import (
 func TestDetectAgents_FindsClaudeCode(t *testing.T) {
 	tmpHome := t.TempDir()
 	claudeDir := filepath.Join(tmpHome, ".claude", "skills")
-	if err := os.MkdirAll(claudeDir, 0755); err != nil {
+	if err := os.MkdirAll(claudeDir, 0o755); err != nil {
 		t.Fatal(err)
 	}
 

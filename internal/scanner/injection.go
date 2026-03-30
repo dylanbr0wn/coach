@@ -43,7 +43,7 @@ func CheckInjection(s *pkg.Skill, patterns []pkg.Pattern) []pkg.Finding {
 
 func ScanSkillFiles(s *pkg.Skill, patterns []pkg.Pattern) []pkg.Finding {
 	var findings []pkg.Finding
-	filepath.Walk(s.Path, func(path string, info os.FileInfo, err error) error {
+	_ = filepath.Walk(s.Path, func(path string, info os.FileInfo, err error) error {
 		if err != nil || info.IsDir() {
 			return err
 		}

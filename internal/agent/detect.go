@@ -56,7 +56,7 @@ func InstalledAgents(agents []pkg.DetectedAgent) []pkg.DetectedAgent {
 	return installed
 }
 
-func resolveHomePath(path string, home string) string {
+func resolveHomePath(path, home string) string {
 	if strings.HasPrefix(path, "~/") {
 		resolved := filepath.Join(home, path[2:])
 		// Preserve trailing slash if the original path had one.

@@ -15,7 +15,7 @@ func CheckScripts(s *pkg.Skill, patterns []pkg.Pattern) []pkg.Finding {
 	if _, err := os.Stat(scriptsDir); os.IsNotExist(err) {
 		return findings
 	}
-	filepath.Walk(scriptsDir, func(path string, info os.FileInfo, err error) error {
+	_ = filepath.Walk(scriptsDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil || info.IsDir() {
 			return err
 		}
