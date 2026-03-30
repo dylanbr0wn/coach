@@ -39,6 +39,10 @@ func runList(cmd *cobra.Command, _ []string) error {
 
 // runListWithHome is the testable core. If home is empty, it uses os.UserHomeDir.
 func runListWithHome(w io.Writer, home, coachDir, agentFilter, format string) error {
+	if format != "table" && format != "json" {
+		return fmt.Errorf("unsupported format %q (use \"table\" or \"json\")", format)
+	}
+
 	var agents []pkg.DetectedAgent
 	var err error
 	if home != "" {
@@ -77,7 +81,10 @@ func runListWithHome(w io.Writer, home, coachDir, agentFilter, format string) er
 		return nil
 	}
 
-	provenance, _ := registry.LoadProvenance(coachDir)
+	provenance, err := registry.LoadProvenance(coachDir)
+	if err != nil {
+		provenance = &registry.InstalledSkills{}
+	}
 	provenanceMap := make(map[string]bool)
 	for _, s := range provenance.Skills {
 		provenanceMap[s.Name] = true
