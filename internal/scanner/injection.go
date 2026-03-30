@@ -7,7 +7,6 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/dylanbr0wn/coach/internal/rules"
 	"github.com/dylanbr0wn/coach/pkg"
 )
 
@@ -28,7 +27,7 @@ func CheckInjection(s *pkg.Skill, patterns []pkg.Pattern) []pkg.Finding {
 				findings = append(findings, pkg.Finding{
 					ID:          p.ID,
 					Category:    p.Category,
-					Severity:    rules.SeverityFromString(p.Severity),
+					Severity:    pkg.SeverityFromString(p.Severity),
 					Name:        p.Name,
 					Description: p.Description,
 					File:        filepath.Join(s.Path, "SKILL.md"),
@@ -65,7 +64,7 @@ func ScanSkillFiles(s *pkg.Skill, patterns []pkg.Pattern) []pkg.Finding {
 				findings = append(findings, pkg.Finding{
 					ID:          p.ID,
 					Category:    p.Category,
-					Severity:    rules.SeverityFromString(p.Severity),
+					Severity:    pkg.SeverityFromString(p.Severity),
 					Name:        p.Name,
 					Description: p.Description,
 					File:        path,

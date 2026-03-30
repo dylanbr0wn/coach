@@ -46,6 +46,24 @@ func (s Severity) ScorePoints() int {
 	}
 }
 
+// SeverityFromString converts a string severity to the Severity type.
+func SeverityFromString(s string) Severity {
+	switch s {
+	case "critical":
+		return SeverityCritical
+	case "high":
+		return SeverityHigh
+	case "medium":
+		return SeverityMedium
+	case "warning":
+		return SeverityWarning
+	case "info":
+		return SeverityInfo
+	default:
+		return SeverityInfo
+	}
+}
+
 // RiskLevel describes the overall risk assessment.
 type RiskLevel int
 

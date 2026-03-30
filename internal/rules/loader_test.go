@@ -60,7 +60,7 @@ func TestSeverityFromString(t *testing.T) {
 		{"unknown", pkg.SeverityInfo},
 	}
 	for _, tt := range tests {
-		got := SeverityFromString(tt.input)
+		got := pkg.SeverityFromString(tt.input)
 		if got != tt.want {
 			t.Errorf("SeverityFromString(%q) = %v, want %v", tt.input, got, tt.want)
 		}

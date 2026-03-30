@@ -9,24 +9,6 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// SeverityFromString converts a string severity to the Severity type.
-func SeverityFromString(s string) pkg.Severity {
-	switch s {
-	case "critical":
-		return pkg.SeverityCritical
-	case "high":
-		return pkg.SeverityHigh
-	case "medium":
-		return pkg.SeverityMedium
-	case "warning":
-		return pkg.SeverityWarning
-	case "info":
-		return pkg.SeverityInfo
-	default:
-		return pkg.SeverityInfo
-	}
-}
-
 // LoadPatterns loads the pattern database. If overrideDir is non-empty,
 // it merges patterns from that directory on top of the embedded defaults.
 // Remote patterns take priority (matched by ID).
