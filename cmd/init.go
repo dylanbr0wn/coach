@@ -8,6 +8,7 @@ import (
 
 	"github.com/charmbracelet/huh"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/dylanbr0wn/coach/internal/config"
 	"github.com/dylanbr0wn/coach/internal/ui"
 	"github.com/spf13/cobra"
 )
@@ -23,9 +24,16 @@ var initSkillCmd = &cobra.Command{
 	RunE:  runInitSkill,
 }
 
+var (
+	initGlobal bool
+	initLocal  bool
+)
+
 func init() {
 	rootCmd.AddCommand(initCmd)
 	initCmd.AddCommand(initSkillCmd)
+	initSkillCmd.Flags().BoolVarP(&initGlobal, "global", "g", false, "Create in global skills (~/.coach/skills/)")
+	initSkillCmd.Flags().BoolVarP(&initLocal, "local", "l", false, "Create in local project skills (.coach/skills/)")
 }
 
 func runInitSkill(cmd *cobra.Command, args []string) error {
@@ -109,7 +117,35 @@ func runInitSkill(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	dir := name
+	// Determine scope and target directory
+	scope := "global"
+	var dir string
+
+	workDir, err := os.Getwd()
+	if err != nil {
+		return fmt.Errorf("getting working directory: %w", err)
+	}
+
+	if initLocal {
+		scope = "local"
+		dir = filepath.Join(workDir, ".coach", "skills", name)
+	} else if initGlobal {
+		scope = "global"
+		dir = filepath.Join(config.DefaultCoachDir(), "skills", name)
+	} else {
+		cfg, err := config.Load(config.DefaultCoachDir())
+		if err != nil {
+			return fmt.Errorf("loading config: %w", err)
+		}
+		if cfg.DefaultScope == "local" {
+			scope = "local"
+			dir = filepath.Join(workDir, ".coach", "skills", name)
+		} else {
+			scope = "global"
+			dir = filepath.Join(config.DefaultCoachDir(), "skills", name)
+		}
+	}
+
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return fmt.Errorf("creating directory: %w", err)
 	}
@@ -146,11 +182,14 @@ func runInitSkill(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	successMsg := lipgloss.NewStyle().Bold(true).Foreground(ui.Green).Render("Skill scaffolded!")
+	successMsg := lipgloss.NewStyle().Bold(true).Foreground(ui.Green).Render("✓ Created " + scope + " skill: " + dir)
 	fmt.Printf("\n%s\n\n", successMsg)
-	fmt.Printf("  %s %s\n", ui.LabelStyle.Render("Directory:"), dir)
-	fmt.Printf("  %s %s\n", ui.LabelStyle.Render("SKILL.md:"), skillPath)
-	fmt.Printf("\n  Run %s to check for issues.\n\n", lipgloss.NewStyle().Bold(true).Render("coach lint "+dir))
+	boldStyle := lipgloss.NewStyle().Bold(true)
+	fmt.Printf("Next steps:\n")
+	fmt.Printf("  %s  # Write skill content in your editor\n", boldStyle.Render("coach edit "+name))
+	fmt.Printf("  %s      # Or use AI to author it\n", boldStyle.Render("coach generate "+name))
+	fmt.Printf("  %s        # Validate the skill\n", boldStyle.Render("coach lint "+dir))
+	fmt.Println()
 
 	return nil
 }

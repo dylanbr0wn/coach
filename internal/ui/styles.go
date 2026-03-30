@@ -1,6 +1,13 @@
 package ui
 
-import "github.com/charmbracelet/lipgloss"
+import (
+	"bufio"
+	"fmt"
+	"os"
+	"strings"
+
+	"github.com/charmbracelet/lipgloss"
+)
 
 var (
 	// Colors
@@ -28,3 +35,15 @@ var (
 			BorderForeground(Cyan).
 			Padding(0, 1)
 )
+
+// PromptYesNo prints prompt to stdout and reads a yes/no answer from stdin.
+// Returns true for empty input, "y", or "yes" (case-insensitive).
+func PromptYesNo(prompt string) bool {
+	fmt.Print(prompt)
+	scanner := bufio.NewScanner(os.Stdin)
+	if !scanner.Scan() {
+		return false
+	}
+	answer := strings.TrimSpace(strings.ToLower(scanner.Text()))
+	return answer == "" || answer == "y" || answer == "yes"
+}

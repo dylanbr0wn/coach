@@ -16,7 +16,19 @@ import (
 var scanCmd = &cobra.Command{
 	Use:   "scan <path>",
 	Short: "Deep security analysis of a skill",
-	Long:  "Performs comprehensive security analysis including prompt injection detection, script auditing, and risk scoring.",
+	Long: `Deep security analysis of a skill using the full pattern database.
+
+Scan performs thorough analysis including:
+  - Prompt injection detection across all files
+  - Script analysis for dangerous shell patterns
+  - Quality checks (missing allowed-tools, weak descriptions)
+  - Risk scoring with severity-weighted findings
+
+Use 'coach lint' for quick spec validation during development.
+
+Examples:
+  coach scan ./my-skill           Full security scan
+  coach scan ./my-skill --json    Output results as JSON`,
 	Args:  cobra.ExactArgs(1),
 	RunE:  runScan,
 }
