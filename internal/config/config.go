@@ -13,10 +13,15 @@ type Config struct {
 	RulesSource    string   `yaml:"rules_source"`
 	TrustedSources []string `yaml:"trusted_sources,omitempty"`
 	DefaultAgents  []string `yaml:"default_agents,omitempty"`
+	DistributeTo   []string `yaml:"distribute_to,omitempty"`
+	LLMCli         string   `yaml:"llm_cli,omitempty"`
+	DefaultScope   string   `yaml:"default_scope,omitempty"`
 }
 
 var defaultConfig = Config{
-	RulesSource: "https://github.com/coach-dev/security-rules",
+	RulesSource:  "https://github.com/coach-dev/security-rules",
+	LLMCli:       "claude",
+	DefaultScope: "global",
 }
 
 // DefaultCoachDir returns the default ~/.coach directory path.
@@ -40,10 +45,9 @@ func EnsureCoachDir(coachDir string) error {
 	return nil
 }
 
-// Load reads the Coach config from the given directory.
-func Load(coachDir string) (*Config, error) {
-	configPath := filepath.Join(coachDir, "config.yaml")
-	data, err := os.ReadFile(configPath)
+// LoadFrom reads the Coach config from an explicit file path.
+func LoadFrom(path string) (*Config, error) {
+	data, err := os.ReadFile(path)
 	if err != nil {
 		if os.IsNotExist(err) {
 			cfg := defaultConfig
@@ -60,12 +64,21 @@ func Load(coachDir string) (*Config, error) {
 	return &cfg, nil
 }
 
-// Save writes the config to disk.
-func Save(coachDir string, cfg *Config) error {
-	configPath := filepath.Join(coachDir, "config.yaml")
+// SaveTo writes the config to an explicit file path.
+func SaveTo(cfg Config, path string) error {
 	data, err := yaml.Marshal(cfg)
 	if err != nil {
 		return fmt.Errorf("marshaling config: %w", err)
 	}
-	return os.WriteFile(configPath, data, 0o644)
+	return os.WriteFile(path, data, 0o644)
+}
+
+// Load reads the Coach config from the given directory.
+func Load(coachDir string) (*Config, error) {
+	return LoadFrom(filepath.Join(coachDir, "config.yaml"))
+}
+
+// Save writes the config to disk.
+func Save(coachDir string, cfg *Config) error {
+	return SaveTo(*cfg, filepath.Join(coachDir, "config.yaml"))
 }
