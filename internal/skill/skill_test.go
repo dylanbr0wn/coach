@@ -1,6 +1,7 @@
 package skill
 
 import (
+	"os"
 	"path/filepath"
 	"runtime"
 	"testing"
@@ -52,5 +53,53 @@ func TestValidate(t *testing.T) {
 	errs := Validate(s)
 	if len(errs) != 0 {
 		t.Errorf("expected 0 validation errors, got %d: %v", len(errs), errs)
+	}
+}
+
+func TestListSkillDirs(t *testing.T) {
+	dir := t.TempDir()
+
+	// Create two skill directories with SKILL.md
+	for _, name := range []string{"skill-a", "skill-b"} {
+		skillDir := filepath.Join(dir, name)
+		if err := os.MkdirAll(skillDir, 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(filepath.Join(skillDir, "SKILL.md"), []byte("---\nname: "+name+"\ndescription: test\n---\nBody"), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	// Create a directory without SKILL.md (should be excluded)
+	if err := os.MkdirAll(filepath.Join(dir, "not-a-skill"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+
+	names := ListSkillDirs(dir)
+	if len(names) != 2 {
+		t.Fatalf("ListSkillDirs() returned %d names, want 2: %v", len(names), names)
+	}
+
+	nameSet := map[string]bool{}
+	for _, n := range names {
+		nameSet[n] = true
+	}
+	if !nameSet["skill-a"] || !nameSet["skill-b"] {
+		t.Errorf("expected skill-a and skill-b, got %v", names)
+	}
+}
+
+func TestListSkillDirs_EmptyDir(t *testing.T) {
+	dir := t.TempDir()
+	names := ListSkillDirs(dir)
+	if len(names) != 0 {
+		t.Errorf("expected 0 names for empty dir, got %d", len(names))
+	}
+}
+
+func TestListSkillDirs_NonexistentDir(t *testing.T) {
+	names := ListSkillDirs("/nonexistent/path")
+	if len(names) != 0 {
+		t.Errorf("expected 0 names for nonexistent dir, got %d", len(names))
 	}
 }
