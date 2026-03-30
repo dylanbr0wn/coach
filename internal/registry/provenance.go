@@ -36,15 +36,15 @@ func SaveProvenance(coachDir string, installed *InstalledSkills) error {
 	if err != nil {
 		return fmt.Errorf("marshaling provenance: %w", err)
 	}
-	return os.WriteFile(path, data, 0644)
+	return os.WriteFile(path, data, 0o644)
 }
 
-func (is *InstalledSkills) AddSkill(skill pkg.InstalledSkill) {
+func (is *InstalledSkills) AddSkill(skill *pkg.InstalledSkill) {
 	for i, existing := range is.Skills {
 		if existing.Name == skill.Name {
-			is.Skills[i] = skill
+			is.Skills[i] = *skill
 			return
 		}
 	}
-	is.Skills = append(is.Skills, skill)
+	is.Skills = append(is.Skills, *skill)
 }

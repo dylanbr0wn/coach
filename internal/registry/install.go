@@ -44,7 +44,7 @@ func RecordInstall(coachDir, name, source, sha string, score int, agents []strin
 		provenance = &InstalledSkills{}
 	}
 
-	provenance.AddSkill(pkg.InstalledSkill{
+	provenance.AddSkill(&pkg.InstalledSkill{
 		Name:        name,
 		Source:      source,
 		CommitSHA:   sha,

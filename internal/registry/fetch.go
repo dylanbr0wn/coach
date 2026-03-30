@@ -80,7 +80,7 @@ func ParseSource(input string) (*Source, error) {
 	return nil, fmt.Errorf("cannot parse source: %s (use owner/repo, a URL, or a local path)", input)
 }
 
-func FetchToCache(src *Source) (localPath string, commitSHA string, err error) {
+func FetchToCache(src *Source) (localPath, commitSHA string, err error) {
 	if src.Type == SourceLocal {
 		absPath, err := filepath.Abs(src.Path)
 		if err != nil {

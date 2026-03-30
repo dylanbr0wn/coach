@@ -71,7 +71,7 @@ func validateRequired(s *pkg.Skill) error {
 	return nil
 }
 
-func splitFrontmatter(data []byte) ([]byte, string, error) {
+func splitFrontmatter(data []byte) (frontmatter []byte, body string, err error) {
 	const delimiter = "---"
 	content := string(data)
 	content = strings.TrimSpace(content)
@@ -87,7 +87,7 @@ func splitFrontmatter(data []byte) ([]byte, string, error) {
 	}
 
 	fm := rest[:endIdx]
-	body := strings.TrimSpace(rest[endIdx+len("\n"+delimiter):])
+	body = strings.TrimSpace(rest[endIdx+len("\n"+delimiter):])
 
 	return bytes.TrimSpace([]byte(fm)), body, nil
 }

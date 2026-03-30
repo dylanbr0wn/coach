@@ -99,8 +99,8 @@ type Skill struct {
 
 // Finding represents a single lint or scan finding.
 type Finding struct {
-	ID          string   // e.g. "PI-001"
-	Category    string   // e.g. "prompt-injection"
+	ID          string // e.g. "PI-001"
+	Category    string // e.g. "prompt-injection"
 	Severity    Severity
 	Name        string
 	Description string
@@ -119,7 +119,7 @@ type ScanResult struct {
 
 // AgentConfig describes a known coding agent and where it stores skills.
 type AgentConfig struct {
-	Name            string   `yaml:"name"`           // Display name (e.g. "Claude Code")
+	Name            string   `yaml:"name"` // Display name (e.g. "Claude Code")
 	SkillDir        string   `yaml:"skill_dir"`
 	ProjectSkillDir string   `yaml:"project_skill_dir,omitempty"`
 	ConfigFiles     []string `yaml:"config_files"`
@@ -140,7 +140,7 @@ type DetectedAgent struct {
 // InstalledSkill records provenance for an installed skill.
 type InstalledSkill struct {
 	Name        string    `yaml:"name"`
-	Source      string    `yaml:"source"`       // e.g. "owner/repo" or local path
+	Source      string    `yaml:"source"` // e.g. "owner/repo" or local path
 	CommitSHA   string    `yaml:"commit_sha"`
 	InstallDate time.Time `yaml:"install_date"`
 	RiskScore   int       `yaml:"risk_score"`
