@@ -46,6 +46,8 @@ func customHelp(cmd *cobra.Command, args []string) {
 
 	fmt.Fprintf(&b, "\n%s\n", h("Authoring"))
 	fmt.Fprintf(&b, "  %s\n", commandEntry(cmd, "init"))
+	fmt.Fprintf(&b, "  %s\n", commandEntry(cmd, "generate"))
+	fmt.Fprintf(&b, "  %s\n", commandEntry(cmd, "edit"))
 
 	fmt.Fprintf(&b, "\n%s\n", h("Analysis"))
 	fmt.Fprintf(&b, "  %s\n", commandEntry(cmd, "lint"))
