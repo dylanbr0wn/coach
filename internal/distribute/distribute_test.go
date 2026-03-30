@@ -152,6 +152,21 @@ func TestFilterAgentsByNames(t *testing.T) {
 	}
 }
 
+func TestFilterAgentsByNames_MatchesKey(t *testing.T) {
+	agents := []pkg.DetectedAgent{
+		{Key: "claude-code", Config: pkg.AgentConfig{Name: "Claude Code"}, Installed: true},
+		{Key: "cursor", Config: pkg.AgentConfig{Name: "Cursor"}, Installed: true},
+	}
+
+	filtered := distribute.FilterAgentsByNames(agents, []string{"claude-code"})
+	if len(filtered) != 1 {
+		t.Fatalf("expected 1 filtered agent, got %d", len(filtered))
+	}
+	if filtered[0].Key != "claude-code" {
+		t.Errorf("expected claude-code, got %q", filtered[0].Key)
+	}
+}
+
 func TestStatusString(t *testing.T) {
 	cases := []struct {
 		s    distribute.Status
