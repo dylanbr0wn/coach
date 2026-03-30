@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -107,6 +108,12 @@ func TestListCommand_InvalidAgent(t *testing.T) {
 	err := runListWithHome(&buf, tmpHome, coachDir, "nonexistent-agent", "table")
 	if err == nil {
 		t.Fatal("expected error for invalid agent, got nil")
+	}
+	if !strings.Contains(err.Error(), "nonexistent-agent") {
+		t.Errorf("error should mention the invalid agent name, got: %v", err)
+	}
+	if !strings.Contains(err.Error(), "available:") {
+		t.Errorf("error should list available agents, got: %v", err)
 	}
 }
 

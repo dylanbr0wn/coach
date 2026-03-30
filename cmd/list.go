@@ -6,6 +6,8 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"sort"
+	"unicode/utf8"
 
 	"github.com/dylanbr0wn/coach/internal/agent"
 	"github.com/dylanbr0wn/coach/internal/config"
@@ -66,9 +68,10 @@ func runListWithHome(w io.Writer, home, coachDir, agentFilter, format string) er
 		}
 		if len(filtered) == 0 {
 			var keys []string
-			for _, a := range agents {
+			for _, a := range installed {
 				keys = append(keys, a.Key)
 			}
+			sort.Strings(keys)
 			return fmt.Errorf("unknown agent %q (available: %v)", agentFilter, keys)
 		}
 		installed = filtered
@@ -156,8 +159,8 @@ func runListWithHome(w io.Writer, home, coachDir, agentFilter, format string) er
 		var rows []ui.TableRow
 		for _, s := range group.Skills {
 			desc := s.Description
-			if len(desc) > 40 {
-				desc = desc[:37] + "..."
+			if utf8.RuneCountInString(desc) > 40 {
+				desc = string([]rune(desc)[:37]) + "..."
 			}
 
 			vetted := ui.SuccessStyle.Render("✓")
