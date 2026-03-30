@@ -73,9 +73,6 @@ func runInitSkill(cmd *cobra.Command, args []string) error {
 				Description("What does this skill do? (max 1024 chars)").
 				Value(&description).
 				Validate(func(s string) error {
-					if s == "" {
-						return fmt.Errorf("description is required")
-					}
 					if len(s) > 1024 {
 						return fmt.Errorf("description must be 1024 characters or less")
 					}
@@ -115,6 +112,10 @@ func runInitSkill(cmd *cobra.Command, args []string) error {
 
 	if err := form.Run(); err != nil {
 		return err
+	}
+
+	if strings.TrimSpace(description) == "" {
+		return fmt.Errorf("description is required")
 	}
 
 	// Determine scope and target directory
