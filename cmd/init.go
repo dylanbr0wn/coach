@@ -118,8 +118,7 @@ func runInitSkill(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("description is required")
 	}
 
-	// Determine scope and target directory
-	scope := "global"
+	// Determine target directory
 	var dir string
 
 	workDir, err := os.Getwd()
@@ -128,10 +127,8 @@ func runInitSkill(cmd *cobra.Command, args []string) error {
 	}
 
 	if initLocal {
-		scope = "local"
 		dir = filepath.Join(workDir, ".coach", "skills", name)
 	} else if initGlobal {
-		scope = "global"
 		dir = filepath.Join(config.DefaultCoachDir(), "skills", name)
 	} else {
 		cfg, err := config.Load(config.DefaultCoachDir())
@@ -139,10 +136,8 @@ func runInitSkill(cmd *cobra.Command, args []string) error {
 			return fmt.Errorf("loading config: %w", err)
 		}
 		if cfg.DefaultScope == "local" {
-			scope = "local"
 			dir = filepath.Join(workDir, ".coach", "skills", name)
 		} else {
-			scope = "global"
 			dir = filepath.Join(config.DefaultCoachDir(), "skills", name)
 		}
 	}
@@ -183,13 +178,16 @@ func runInitSkill(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	successMsg := lipgloss.NewStyle().Bold(true).Foreground(ui.Green).Render("✓ Created " + scope + " skill: " + dir)
-	fmt.Printf("\n%s\n\n", successMsg)
+	fmt.Println()
+	fmt.Printf("  %s Skill created: %s\n", ui.SuccessStyle.Render("✓"), name)
+	fmt.Printf("  Path: %s\n", dir)
+	fmt.Println()
 	boldStyle := lipgloss.NewStyle().Bold(true)
-	fmt.Printf("Next steps:\n")
-	fmt.Printf("  %s  # Write skill content in your editor\n", boldStyle.Render("coach edit "+name))
-	fmt.Printf("  %s      # Or use AI to author it\n", boldStyle.Render("coach generate "+name))
-	fmt.Printf("  %s        # Validate the skill\n", boldStyle.Render("coach lint "+dir))
+	fmt.Printf("  Next steps:\n")
+	fmt.Printf("    %-36s   Edit the skill\n", boldStyle.Render("coach edit "+name))
+	fmt.Printf("    %-36s   Author with AI\n", boldStyle.Render("coach generate "+name))
+	fmt.Printf("    %-36s   Validate all managed skills\n", boldStyle.Render("coach lint"))
+	fmt.Printf("    %-36s   Distribute to your agents\n", boldStyle.Render("coach sync"))
 	fmt.Println()
 
 	return nil

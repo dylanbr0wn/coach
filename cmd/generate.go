@@ -146,7 +146,13 @@ func runSingleShot(cliPath, systemPrompt, userPrompt, skillPath, skillDir, skill
 	if err := os.WriteFile(skillPath, []byte(result+"\n"), 0o644); err != nil {
 		return fmt.Errorf("writing skill: %w", err)
 	}
-	fmt.Printf("%s Written to %s\n", ui.SuccessStyle.Render("✓"), skillPath)
+	fmt.Printf("  %s Skill updated: %s\n", ui.SuccessStyle.Render("✓"), skillName)
+	fmt.Printf("  Path: %s\n", skillPath)
+	fmt.Println()
+	fmt.Printf("  Next steps:\n")
+	fmt.Printf("    %-36s   Validate all managed skills\n", ui.InfoStyle.Render("coach lint"))
+	fmt.Printf("    %-36s   Distribute to your agents\n", ui.InfoStyle.Render("coach sync"))
+	fmt.Println()
 
 	return lintAfterGenerate(skillDir, skillName)
 }
@@ -180,6 +186,10 @@ func lintAfterGenerate(skillDir, skillName string) error {
 		return nil
 	}
 
-	fmt.Printf("%s %s validated successfully.\n", ui.SuccessStyle.Render("✓"), skillName)
+	fmt.Printf("  %s %s validated successfully.\n", ui.SuccessStyle.Render("✓"), skillName)
+	fmt.Println()
+	fmt.Printf("  Next steps:\n")
+	fmt.Printf("    %-36s   Distribute to your agents\n", ui.InfoStyle.Render("coach sync"))
+	fmt.Println()
 	return nil
 }
