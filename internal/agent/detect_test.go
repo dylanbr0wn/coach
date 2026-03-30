@@ -45,6 +45,32 @@ func TestDetectAgents_SkipsMissing(t *testing.T) {
 	}
 }
 
+func TestDetectAgents_HasKey(t *testing.T) {
+	tmpHome := t.TempDir()
+	claudeDir := filepath.Join(tmpHome, ".claude", "skills")
+	if err := os.MkdirAll(claudeDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+
+	agents, err := DetectAgentsInHome(tmpHome)
+	if err != nil {
+		t.Fatalf("DetectAgentsInHome() error: %v", err)
+	}
+
+	for _, a := range agents {
+		if a.Key == "" {
+			t.Errorf("agent %q has empty Key", a.Config.Name)
+		}
+	}
+
+	// Check specific key mapping
+	for _, a := range agents {
+		if a.Config.Name == "Claude Code" && a.Key != "claude-code" {
+			t.Errorf("Claude Code Key = %q, want %q", a.Key, "claude-code")
+		}
+	}
+}
+
 func TestResolveSkillDir(t *testing.T) {
 	result := resolveHomePath("~/.claude/skills/", "/Users/test")
 	expected := "/Users/test/.claude/skills/"

@@ -2,13 +2,11 @@ package cmd
 
 import (
 	"fmt"
-	"os"
-	"path/filepath"
-	"strings"
 
 	"github.com/dylanbr0wn/coach/internal/agent"
 	"github.com/dylanbr0wn/coach/internal/config"
 	"github.com/dylanbr0wn/coach/internal/registry"
+	"github.com/dylanbr0wn/coach/internal/skill"
 	"github.com/dylanbr0wn/coach/internal/ui"
 	"github.com/spf13/cobra"
 )
@@ -55,7 +53,7 @@ func runStatus(cmd *cobra.Command, args []string) error {
 	for _, a := range installed {
 		skillCount := 0
 		unvetted := 0
-		skillNames := listSkillDirs(a.SkillDir)
+		skillNames := skill.ListSkillDirs(a.SkillDir)
 		skillCount = len(skillNames)
 
 		for _, name := range skillNames {
@@ -85,24 +83,4 @@ func runStatus(cmd *cobra.Command, args []string) error {
 	fmt.Println()
 
 	return nil
-}
-
-func listSkillDirs(dir string) []string {
-	var names []string
-	entries, err := os.ReadDir(dir)
-	if err != nil {
-		return names
-	}
-	for _, e := range entries {
-		if e.IsDir() {
-			skillPath := filepath.Join(dir, e.Name(), "SKILL.md")
-			if _, err := os.Stat(skillPath); err == nil {
-				names = append(names, e.Name())
-			}
-		}
-		if !e.IsDir() && strings.EqualFold(e.Name(), "SKILL.md") {
-			names = append(names, filepath.Base(dir))
-		}
-	}
-	return names
 }

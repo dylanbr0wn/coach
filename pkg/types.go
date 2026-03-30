@@ -132,6 +132,7 @@ type AgentConfig struct {
 
 // DetectedAgent is an agent found on the local system.
 type DetectedAgent struct {
+	Key       string // Registry key, e.g. "claude-code"
 	Config    AgentConfig
 	Installed bool   // Whether the agent's directory exists
 	SkillDir  string // Resolved absolute path to skill directory
