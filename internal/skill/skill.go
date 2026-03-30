@@ -100,3 +100,25 @@ func isValidName(name string) bool {
 	}
 	return true
 }
+
+// ListSkillDirs returns the names of subdirectories in dir that contain a SKILL.md file.
+// It also detects a flat layout where SKILL.md is directly in dir.
+func ListSkillDirs(dir string) []string {
+	var names []string
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		return names
+	}
+	for _, e := range entries {
+		if e.IsDir() {
+			skillPath := filepath.Join(dir, e.Name(), "SKILL.md")
+			if _, err := os.Stat(skillPath); err == nil {
+				names = append(names, e.Name())
+			}
+		}
+		if !e.IsDir() && strings.EqualFold(e.Name(), "SKILL.md") {
+			names = append(names, filepath.Base(dir))
+		}
+	}
+	return names
+}
