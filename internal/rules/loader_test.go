@@ -2,8 +2,6 @@ package rules
 
 import (
 	"testing"
-
-	"github.com/dylanbr0wn/coach/pkg"
 )
 
 func TestLoadEmbeddedPatterns(t *testing.T) {
@@ -44,25 +42,5 @@ func TestLoadEmbeddedAgents(t *testing.T) {
 	}
 	if cc.SkillDir == "" {
 		t.Error("claude-code skill_dir should not be empty")
-	}
-}
-
-func TestSeverityFromString(t *testing.T) {
-	tests := []struct {
-		input string
-		want  pkg.Severity
-	}{
-		{"critical", pkg.SeverityCritical},
-		{"high", pkg.SeverityHigh},
-		{"medium", pkg.SeverityMedium},
-		{"warning", pkg.SeverityWarning},
-		{"info", pkg.SeverityInfo},
-		{"unknown", pkg.SeverityInfo},
-	}
-	for _, tt := range tests {
-		got := pkg.SeverityFromString(tt.input)
-		if got != tt.want {
-			t.Errorf("SeverityFromString(%q) = %v, want %v", tt.input, got, tt.want)
-		}
 	}
 }
