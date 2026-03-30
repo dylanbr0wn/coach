@@ -4,8 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/dylanbr0wn/coach/internal/config"
+	"github.com/dylanbr0wn/coach/internal/resolve"
 	"github.com/dylanbr0wn/coach/internal/rules"
 	"github.com/dylanbr0wn/coach/internal/scanner"
 	"github.com/dylanbr0wn/coach/internal/skill"
@@ -43,11 +45,48 @@ func init() {
 }
 
 func runLint(cmd *cobra.Command, args []string) error {
-	path := "."
 	if len(args) > 0 {
-		path = args[0]
+		return lintSingleSkill(args[0])
+	}
+	return lintAllManaged()
+}
+
+func lintAllManaged() error {
+	coachDir := config.DefaultCoachDir()
+	workDir, err := os.Getwd()
+	if err != nil {
+		return fmt.Errorf("getting working directory: %w", err)
 	}
 
+	r := resolve.Resolver{
+		GlobalSkillsDir: filepath.Join(coachDir, "skills"),
+		WorkDir:         workDir,
+	}
+
+	managed, err := r.List(resolve.ScopeAny)
+	if err != nil {
+		return fmt.Errorf("listing managed skills: %w", err)
+	}
+
+	if len(managed) == 0 {
+		fmt.Println("No managed skills found.")
+		return nil
+	}
+
+	var exitCode int
+	for _, m := range managed {
+		if err := lintSingleSkill(m.Dir); err != nil {
+			exitCode = 1
+		}
+	}
+
+	if exitCode != 0 {
+		os.Exit(1)
+	}
+	return nil
+}
+
+func lintSingleSkill(path string) error {
 	s, err := skill.Parse(path)
 	if err != nil {
 		return fmt.Errorf("parsing skill at %s: %w", path, err)
@@ -100,7 +139,7 @@ func runLint(cmd *cobra.Command, args []string) error {
 
 	for _, f := range result.Findings {
 		if f.Severity >= pkg.SeverityHigh {
-			os.Exit(1)
+			return fmt.Errorf("high severity finding: %s", f.Name)
 		}
 	}
 

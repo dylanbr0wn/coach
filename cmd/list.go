@@ -7,11 +7,13 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 	"unicode/utf8"
 
 	"github.com/dylanbr0wn/coach/internal/agent"
 	"github.com/dylanbr0wn/coach/internal/config"
 	"github.com/dylanbr0wn/coach/internal/registry"
+	"github.com/dylanbr0wn/coach/internal/resolve"
 	"github.com/dylanbr0wn/coach/internal/skill"
 	"github.com/dylanbr0wn/coach/internal/ui"
 	"github.com/dylanbr0wn/coach/pkg"
@@ -91,6 +93,50 @@ func runListWithHome(w io.Writer, home, coachDir, agentFilter, format string) er
 	provenanceMap := make(map[string]bool)
 	for _, s := range provenance.Skills {
 		provenanceMap[s.Name] = true
+	}
+
+	// --- Managed Skills Section ---
+	workDir, _ := os.Getwd()
+	r := resolve.Resolver{
+		GlobalSkillsDir: filepath.Join(coachDir, "skills"),
+		WorkDir:         workDir,
+	}
+
+	managed, _ := r.List(resolve.ScopeAny)
+
+	// Build a set of agent skill dirs for sync-status lookup
+	agentSkillNames := make(map[string][]string) // skill name -> agent names
+	for _, a := range installed {
+		skillNames := skill.ListSkillDirs(a.SkillDir)
+		for _, sn := range skillNames {
+			agentSkillNames[sn] = append(agentSkillNames[sn], a.Config.Name)
+		}
+	}
+
+	if format == "table" && len(managed) > 0 {
+		fmt.Fprintln(w)
+		fmt.Fprintln(w, ui.HeadingStyle.Render("  Managed Skills"))
+		fmt.Fprintln(w)
+
+		var managedRows []ui.TableRow
+		for _, m := range managed {
+			scopeLabel := "global"
+			if m.Scope == resolve.ScopeLocal {
+				scopeLabel = "local"
+			}
+			syncedTo := "--"
+			if agents, ok := agentSkillNames[m.Name]; ok && len(agents) > 0 {
+				syncedTo = strings.Join(agents, ", ")
+			}
+			managedRows = append(managedRows, ui.TableRow{
+				Cells: []string{m.Name, scopeLabel, syncedTo},
+			})
+		}
+
+		fmt.Fprint(w, ui.RenderTable(
+			[]string{"Name", "Scope", "Synced To"},
+			managedRows,
+		))
 	}
 
 	type skillInfo struct {
