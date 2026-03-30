@@ -19,7 +19,20 @@ var lintJSON bool
 var lintCmd = &cobra.Command{
 	Use:   "lint [path]",
 	Short: "Check a skill for spec compliance and security issues",
-	Long:  "Validates SKILL.md frontmatter, checks for prompt injection patterns, and audits scripts for dangerous operations.",
+	Long: `Validate a skill against the SKILL.md specification and run security checks.
+
+Lint checks for:
+  - Required frontmatter fields (name, description)
+  - Field format and length constraints
+  - Body content presence
+  - Common security patterns (prompt injection, dangerous commands)
+
+Use 'coach scan' for deeper security analysis with the full pattern database.
+
+Examples:
+  coach lint .                    Lint skill in current directory
+  coach lint ./my-skill           Lint a specific skill
+  coach lint ./my-skill --json    Output results as JSON`,
 	Args:  cobra.MaximumNArgs(1),
 	RunE:  runLint,
 }

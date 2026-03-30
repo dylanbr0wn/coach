@@ -32,6 +32,10 @@ func init() {
 func customHelp(cmd *cobra.Command, args []string) {
 	// Only customize help for the root command; subcommands get default help.
 	if cmd != rootCmd {
+		if cmd.Long != "" {
+			fmt.Fprintln(os.Stdout, cmd.Long)
+			fmt.Fprintln(os.Stdout)
+		}
 		_ = cmd.Usage()
 		return
 	}
@@ -56,13 +60,18 @@ func customHelp(cmd *cobra.Command, args []string) {
 
 	fmt.Fprintf(&b, "\n%s\n", h("Management"))
 	fmt.Fprintf(&b, "  %s\n", commandEntry(cmd, "install"))
+	fmt.Fprintf(&b, "  %s\n", commandEntry(cmd, "sync"))
+	fmt.Fprintf(&b, "  %s\n", commandEntry(cmd, "config"))
 	fmt.Fprintf(&b, "  %s\n", commandEntry(cmd, "status"))
 	fmt.Fprintf(&b, "  %s\n", commandEntry(cmd, "update-rules"))
 
 	fmt.Fprintf(&b, "\n%s\n", h("Getting Started"))
-	fmt.Fprintf(&b, "  coach init skill\n")
-	fmt.Fprintf(&b, "  coach lint ./skills/\n")
-	fmt.Fprintf(&b, "  coach install claude\n")
+	fmt.Fprintf(&b, "  1. coach init skill                         %s\n", d("Create a new skill"))
+	fmt.Fprintf(&b, "  2. coach edit <name>                        %s\n", d("Write the skill content"))
+	fmt.Fprintf(&b, "     coach generate <name>                    %s\n", d("Or use AI to author it"))
+	fmt.Fprintf(&b, "  3. coach lint <path>                        %s\n", d("Validate the skill"))
+	fmt.Fprintf(&b, "  4. coach config set distribute-to claude    %s\n", d("Configure distribution"))
+	fmt.Fprintf(&b, "  5. coach sync                               %s\n", d("Symlink skills to agents"))
 
 	fmt.Fprintf(&b, "\n%s\n", h("Flags"))
 	fmt.Fprintf(&b, "%s\n", cmd.LocalFlags().FlagUsages())
