@@ -54,6 +54,7 @@ func customHelp(cmd *cobra.Command, args []string) {
 
 	fmt.Fprintf(&b, "\n%s\n", h("Management"))
 	fmt.Fprintf(&b, "  %s\n", commandEntry(cmd, "install"))
+	fmt.Fprintf(&b, "  %s\n", commandEntry(cmd, "list"))
 	fmt.Fprintf(&b, "  %s\n", commandEntry(cmd, "status"))
 	fmt.Fprintf(&b, "  %s\n", commandEntry(cmd, "update-rules"))
 
