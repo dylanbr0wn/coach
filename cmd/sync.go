@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/charmbracelet/huh"
 	"github.com/dylanbr0wn/coach/internal/agent"
 	"github.com/dylanbr0wn/coach/internal/config"
 	"github.com/dylanbr0wn/coach/internal/distribute"
@@ -45,7 +46,43 @@ func runSync(cmd *cobra.Command, args []string) error {
 	}
 
 	if len(cfg.DistributeTo) == 0 {
-		return fmt.Errorf("no distribution targets configured. Run: coach config set distribute-to claude,cursor")
+		detected, detectErr := agent.DetectAgents("")
+		if detectErr != nil {
+			return fmt.Errorf("detecting agents: %w", detectErr)
+		}
+
+		var agentOptions []huh.Option[string]
+		for _, a := range detected {
+			label := fmt.Sprintf("%s (%s)", a.Config.Name, a.SkillDir)
+			agentOptions = append(agentOptions, huh.NewOption(label, a.Key))
+		}
+
+		if len(agentOptions) == 0 {
+			return fmt.Errorf("no agents detected on this system")
+		}
+
+		var selected []string
+		err := huh.NewForm(
+			huh.NewGroup(
+				huh.NewMultiSelect[string]().
+					Title("No distribution targets configured. Which agents should receive your skills?").
+					Options(agentOptions...).
+					Value(&selected),
+			),
+		).Run()
+		if err != nil {
+			return err
+		}
+
+		if len(selected) == 0 {
+			return fmt.Errorf("no agents selected")
+		}
+
+		cfg.DistributeTo = selected
+		if saveErr := config.Save(coachDir, cfg); saveErr != nil {
+			return fmt.Errorf("saving config: %w", saveErr)
+		}
+		fmt.Printf("%s Saved distribution targets: %s\n\n", ui.SuccessStyle.Render("✓"), strings.Join(selected, ", "))
 	}
 
 	workDir, err := os.Getwd()
