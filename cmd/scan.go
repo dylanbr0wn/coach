@@ -75,7 +75,7 @@ func runScan(cmd *cobra.Command, args []string) error {
 	result.Risk = pkg.RiskLevelFromScore(result.Score)
 
 	fmt.Println()
-	fmt.Println(ui.HeadingStyle.Render("  Security Scan Report"))
+	fmt.Println(ui.HeadingStyle.Render("  Scan: deep security analysis (full pattern database)"))
 	fmt.Println()
 	fmt.Println(ui.RenderScanSummary(result))
 	fmt.Println()

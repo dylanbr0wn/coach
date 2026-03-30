@@ -85,9 +85,18 @@ func runLint(cmd *cobra.Command, args []string) error {
 	}
 
 	fmt.Println()
+	fmt.Println(ui.HeadingStyle.Render("  Lint: spec compliance + basic security"))
+	fmt.Println()
 	fmt.Println(ui.RenderScanSummary(result))
 	fmt.Println()
 	fmt.Println(ui.RenderFindings(result.Findings))
+
+	counts := countFindingSeverities(result.Findings)
+	fmt.Printf("  %s  %d error(s), %d warning(s) %s\n\n",
+		ui.HeadingStyle.Render("Lint complete."),
+		counts["errors"], counts["warnings"],
+		ui.DimStyle.Render("(spec + basic security)"),
+	)
 
 	for _, f := range result.Findings {
 		if f.Severity >= pkg.SeverityHigh {
@@ -96,6 +105,18 @@ func runLint(cmd *cobra.Command, args []string) error {
 	}
 
 	return nil
+}
+
+func countFindingSeverities(findings []pkg.Finding) map[string]int {
+	counts := map[string]int{"errors": 0, "warnings": 0}
+	for _, f := range findings {
+		if f.Severity >= pkg.SeverityHigh {
+			counts["errors"]++
+		} else if f.Severity >= pkg.SeverityWarning {
+			counts["warnings"]++
+		}
+	}
+	return counts
 }
 
 func outputJSON(result *pkg.ScanResult) error {
