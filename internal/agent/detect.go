@@ -31,11 +31,12 @@ func DetectAgentsInHome(home string, overrideDir ...string) ([]pkg.DetectedAgent
 	}
 
 	var detected []pkg.DetectedAgent
-	for _, agentCfg := range reg.Agents {
+	for key, agentCfg := range reg.Agents {
 		resolvedDir := resolveHomePath(agentCfg.SkillDir, home)
 		installed := dirExists(resolvedDir)
 
 		detected = append(detected, pkg.DetectedAgent{
+			Key:       key,
 			Config:    agentCfg,
 			Installed: installed,
 			SkillDir:  resolvedDir,
