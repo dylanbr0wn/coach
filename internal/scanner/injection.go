@@ -7,8 +7,8 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/dylan/coach/internal/rules"
-	"github.com/dylan/coach/pkg"
+	"github.com/dylanbr0wn/coach/internal/rules"
+	"github.com/dylanbr0wn/coach/pkg"
 )
 
 func CheckInjection(s *pkg.Skill, patterns []pkg.Pattern) []pkg.Finding {

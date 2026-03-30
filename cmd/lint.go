@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/dylan/coach/internal/config"
-	"github.com/dylan/coach/internal/rules"
-	"github.com/dylan/coach/internal/scanner"
-	"github.com/dylan/coach/internal/skill"
-	"github.com/dylan/coach/internal/ui"
-	"github.com/dylan/coach/pkg"
+	"github.com/dylanbr0wn/coach/internal/config"
+	"github.com/dylanbr0wn/coach/internal/rules"
+	"github.com/dylanbr0wn/coach/internal/scanner"
+	"github.com/dylanbr0wn/coach/internal/skill"
+	"github.com/dylanbr0wn/coach/internal/ui"
+	"github.com/dylanbr0wn/coach/pkg"
 	"github.com/spf13/cobra"
 )
 

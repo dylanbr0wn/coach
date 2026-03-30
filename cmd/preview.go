@@ -7,8 +7,8 @@ import (
 	"strings"
 
 	"github.com/charmbracelet/glamour"
-	"github.com/dylan/coach/internal/skill"
-	"github.com/dylan/coach/internal/ui"
+	"github.com/dylanbr0wn/coach/internal/skill"
+	"github.com/dylanbr0wn/coach/internal/ui"
 	"github.com/spf13/cobra"
 )
 

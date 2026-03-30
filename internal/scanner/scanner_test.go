@@ -5,9 +5,9 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/dylan/coach/internal/rules"
-	"github.com/dylan/coach/internal/skill"
-	"github.com/dylan/coach/pkg"
+	"github.com/dylanbr0wn/coach/internal/rules"
+	"github.com/dylanbr0wn/coach/internal/skill"
+	"github.com/dylanbr0wn/coach/pkg"
 )
 
 func testdataDir() string {

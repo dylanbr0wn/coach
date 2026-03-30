@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/dylan/coach/pkg"
+	"github.com/dylanbr0wn/coach/pkg"
 )
 
 // DetectAgents finds which coding agents are installed on the current system.

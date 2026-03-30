@@ -3,7 +3,7 @@ package scanner
 import (
 	"path/filepath"
 
-	"github.com/dylan/coach/pkg"
+	"github.com/dylanbr0wn/coach/pkg"
 )
 
 func CheckQuality(s *pkg.Skill) []pkg.Finding {

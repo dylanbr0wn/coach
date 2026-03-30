@@ -1,6 +1,6 @@
 package scanner
 
-import "github.com/dylan/coach/pkg"
+import "github.com/dylanbr0wn/coach/pkg"
 
 func CalculateScore(findings []pkg.Finding) int {
 	idCount := make(map[string]int)

@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/dylan/coach/internal/config"
+	"github.com/dylanbr0wn/coach/internal/config"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
 )
@@ -14,7 +14,7 @@ import (
 type SourceType int
 
 const (
-	SourceLocal  SourceType = iota
+	SourceLocal SourceType = iota
 	SourceGitHub
 	SourceURL
 )

@@ -6,10 +6,10 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/dylan/coach/internal/agent"
-	"github.com/dylan/coach/internal/config"
-	"github.com/dylan/coach/internal/registry"
-	"github.com/dylan/coach/internal/ui"
+	"github.com/dylanbr0wn/coach/internal/agent"
+	"github.com/dylanbr0wn/coach/internal/config"
+	"github.com/dylanbr0wn/coach/internal/registry"
+	"github.com/dylanbr0wn/coach/internal/ui"
 	"github.com/spf13/cobra"
 )
 

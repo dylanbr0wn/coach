@@ -11,13 +11,13 @@ Coach is the developer experience layer for the [Agent Skills](https://agentskil
 Install with Go:
 
 ```bash
-go install github.com/dylan/coach@latest
+go install github.com/dylanbr0wn/coach@latest
 ```
 
 Or build from source:
 
 ```bash
-git clone https://github.com/dylan/coach.git
+git clone https://github.com/dylanbr0wn/coach.git
 cd coach
 go build -o coach .
 ```

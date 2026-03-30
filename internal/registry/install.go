@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/dylan/coach/pkg"
+	"github.com/dylanbr0wn/coach/pkg"
 )
 
 type InstallOptions struct {

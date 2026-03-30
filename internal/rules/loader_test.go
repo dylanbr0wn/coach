@@ -3,7 +3,7 @@ package rules
 import (
 	"testing"
 
-	"github.com/dylan/coach/pkg"
+	"github.com/dylanbr0wn/coach/pkg"
 )
 
 func TestLoadEmbeddedPatterns(t *testing.T) {

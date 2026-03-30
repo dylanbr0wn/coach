@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/dylan/coach/pkg"
+	"github.com/dylanbr0wn/coach/pkg"
 	"gopkg.in/yaml.v3"
 )
 

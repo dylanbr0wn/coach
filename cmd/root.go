@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/dylan/coach/internal/ui"
+	"github.com/dylanbr0wn/coach/internal/ui"
 	"github.com/spf13/cobra"
 )
 

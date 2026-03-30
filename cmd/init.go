@@ -8,7 +8,7 @@ import (
 
 	"github.com/charmbracelet/huh"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/dylan/coach/internal/ui"
+	"github.com/dylanbr0wn/coach/internal/ui"
 	"github.com/spf13/cobra"
 )
 

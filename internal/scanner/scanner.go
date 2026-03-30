@@ -1,6 +1,6 @@
 package scanner
 
-import "github.com/dylan/coach/pkg"
+import "github.com/dylanbr0wn/coach/pkg"
 
 func ScanSkill(s *pkg.Skill, db *pkg.PatternDatabase) *pkg.ScanResult {
 	var allFindings []pkg.Finding

@@ -1,8 +1,8 @@
 package agent
 
 import (
-	"github.com/dylan/coach/internal/rules"
-	"github.com/dylan/coach/pkg"
+	"github.com/dylanbr0wn/coach/internal/rules"
+	"github.com/dylanbr0wn/coach/pkg"
 )
 
 // LoadRegistry loads the agent registry from embedded + optional override directory.

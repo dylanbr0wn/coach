@@ -1,4 +1,4 @@
-module github.com/dylan/coach
+module github.com/dylanbr0wn/coach
 
 go 1.24.2
 
