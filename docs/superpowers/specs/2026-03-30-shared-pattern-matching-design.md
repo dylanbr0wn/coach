@@ -88,9 +88,9 @@ func CheckScripts(s *pkg.Skill, patterns []pkg.Pattern) []pkg.Finding {
 
 Both wrappers discard compile errors (matching current behavior). Errors are available for tests to assert on.
 
-### `FormatMatch` relocation
+### `FormatMatch` removal
 
-`FormatMatch` moves from `injection.go` to `scanner/format.go` — it's a display utility, not a matching concern.
+`FormatMatch` is dead code — defined in `injection.go` but never called anywhere in the codebase. It is deleted as part of the `injection.go` rewrite.
 
 ### `SeverityFromString` move
 
@@ -101,9 +101,8 @@ Both wrappers discard compile errors (matching current behavior). Errors are ava
 | File | Change |
 |------|--------|
 | `scanner/match.go` | **New** — `source`, `matchPatterns`, `walkSources`, `matchesFileType`, `lineNumber` |
-| `scanner/format.go` | **New** — `FormatMatch` moved here |
 | `scanner/match_test.go` | **New** — unit tests for `matchPatterns` |
-| `scanner/injection.go` | **Simplified** — thin wrapper, helpers removed |
+| `scanner/injection.go` | **Simplified** — thin wrapper, helpers removed, dead `FormatMatch` deleted |
 | `scanner/script.go` | **Simplified** — thin wrapper |
 | `pkg/types.go` | **Added** `SeverityFromString` |
 | `rules/loader.go` | **Updated** calls to `pkg.SeverityFromString`, removed function |
