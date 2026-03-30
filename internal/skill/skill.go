@@ -110,13 +110,18 @@ func ListSkillDirs(dir string) []string {
 		return names
 	}
 	for _, e := range entries {
-		if e.IsDir() {
-			skillPath := filepath.Join(dir, e.Name(), "SKILL.md")
+		fullPath := filepath.Join(dir, e.Name())
+		fi, err := os.Stat(fullPath)
+		if err != nil {
+			continue
+		}
+		if fi.IsDir() {
+			skillPath := filepath.Join(fullPath, "SKILL.md")
 			if _, err := os.Stat(skillPath); err == nil {
 				names = append(names, e.Name())
 			}
 		}
-		if !e.IsDir() && strings.EqualFold(e.Name(), "SKILL.md") {
+		if !fi.IsDir() && strings.EqualFold(e.Name(), "SKILL.md") {
 			names = append(names, filepath.Base(dir))
 		}
 	}

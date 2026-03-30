@@ -103,3 +103,30 @@ func TestListSkillDirs_NonexistentDir(t *testing.T) {
 		t.Errorf("expected 0 names for nonexistent dir, got %d", len(names))
 	}
 }
+
+func TestListSkillDirs_Symlinked(t *testing.T) {
+	dir := t.TempDir()
+	realDir := t.TempDir()
+
+	// Create a real skill directory elsewhere
+	skillDir := filepath.Join(realDir, "linked-skill")
+	if err := os.MkdirAll(skillDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(skillDir, "SKILL.md"), []byte("---\nname: linked-skill\ndescription: test\n---\nBody"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	// Symlink it into the listing directory
+	if err := os.Symlink(skillDir, filepath.Join(dir, "linked-skill")); err != nil {
+		t.Fatal(err)
+	}
+
+	names := ListSkillDirs(dir)
+	if len(names) != 1 {
+		t.Fatalf("ListSkillDirs() returned %d names, want 1: %v", len(names), names)
+	}
+	if names[0] != "linked-skill" {
+		t.Errorf("expected 'linked-skill', got %q", names[0])
+	}
+}

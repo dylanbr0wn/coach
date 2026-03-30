@@ -182,15 +182,16 @@ func listDir(dir string, scope Scope) ([]Result, error) {
 
 	var results []Result
 	for _, e := range entries {
-		if !e.IsDir() {
+		fullPath := filepath.Join(dir, e.Name())
+		fi, err := os.Stat(fullPath)
+		if err != nil || !fi.IsDir() {
 			continue
 		}
-		skillPath := filepath.Join(dir, e.Name(), "SKILL.md")
+		skillPath := filepath.Join(fullPath, "SKILL.md")
 		if fileExists(skillPath) {
-			skillDir := filepath.Join(dir, e.Name())
 			results = append(results, Result{
 				Path:  skillPath,
-				Dir:   skillDir,
+				Dir:   fullPath,
 				Name:  e.Name(),
 				Scope: scope,
 			})
