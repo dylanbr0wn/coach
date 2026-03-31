@@ -98,7 +98,7 @@ func runEdit(cmd *cobra.Command, args []string) error {
 
 		s, err := skill.Parse(result.Dir)
 		if err != nil {
-			fmt.Println(ui.ErrorStyle.Render(fmt.Sprintf("Parse error: %v", err)))
+			fmt.Println(ui.Error(fmt.Sprintf("Parse error: %v", err), ""))
 			if ui.PromptYesNo("Re-open to fix? [Y/n] ") {
 				continue
 			}
@@ -109,7 +109,7 @@ func runEdit(cmd *cobra.Command, args []string) error {
 		if len(issues) > 0 {
 			fmt.Println()
 			for _, issue := range issues {
-				fmt.Println(ui.ErrorStyle.Render("  ✗ " + issue))
+				fmt.Println(ui.Error(issue, ""))
 			}
 			fmt.Println()
 			if ui.PromptYesNo("Re-open to fix? [Y/n] ") {
@@ -118,7 +118,7 @@ func runEdit(cmd *cobra.Command, args []string) error {
 			return nil
 		}
 
-		fmt.Printf("%s %s saved and validated.\n", ui.SuccessStyle.Render("✓"), name)
+		fmt.Println(ui.Success(fmt.Sprintf("%s saved and validated.", name)))
 		return nil
 	}
 }
