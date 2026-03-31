@@ -102,25 +102,12 @@ func FetchToCache(src *Source) (localPath, commitSHA string, err error) {
 	}
 	destPath := filepath.Join(cacheDir, repoDir)
 
-	if _, err := os.Stat(destPath); err == nil {
-		repo, err := git.PlainOpen(destPath)
-		if err != nil {
-			os.RemoveAll(destPath)
-			goto clone
+	if _, statErr := os.Stat(destPath); statErr == nil {
+		if path, sha, ok := tryUpdateCache(destPath); ok {
+			return path, sha, nil
 		}
-
-		if w, err := repo.Worktree(); err == nil {
-			_ = w.Pull(&git.PullOptions{Force: true})
-		}
-
-		head, err := repo.Head()
-		if err != nil {
-			return destPath, "unknown", nil
-		}
-		return destPath, head.Hash().String()[:12], nil
+		os.RemoveAll(destPath)
 	}
-
-clone:
 
 	repo, err := git.PlainClone(destPath, false, &git.CloneOptions{
 		URL:           src.CloneURL,
@@ -164,6 +151,25 @@ func FindSkills(dir string) ([]string, error) {
 	}
 
 	return skills, nil
+}
+
+// tryUpdateCache attempts to pull the latest changes for an existing cached repo.
+// Returns the path, short SHA, and true on success; false if the cache should be rebuilt.
+func tryUpdateCache(destPath string) (string, string, bool) {
+	repo, err := git.PlainOpen(destPath)
+	if err != nil {
+		return "", "", false
+	}
+
+	if w, err := repo.Worktree(); err == nil {
+		_ = w.Pull(&git.PullOptions{Force: true})
+	}
+
+	head, err := repo.Head()
+	if err != nil {
+		return destPath, "unknown", true
+	}
+	return destPath, head.Hash().String()[:12], true
 }
 
 func sanitizePath(url string) string {
