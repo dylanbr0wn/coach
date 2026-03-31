@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/dylanbr0wn/coach/pkg"
+	"github.com/dylanbr0wn/coach/internal/types"
 )
 
 type InstallOptions struct {
@@ -20,7 +20,9 @@ func InstallSkill(srcDir, agentSkillDir string, opts InstallOptions) error {
 	skillName := filepath.Base(srcDir)
 	destDir := filepath.Join(agentSkillDir, skillName)
 
-	os.RemoveAll(destDir)
+	if err := os.RemoveAll(destDir); err != nil {
+		return fmt.Errorf("removing existing skill at %s: %w", destDir, err)
+	}
 
 	if opts.Copy {
 		return copyDir(srcDir, destDir)
@@ -44,7 +46,7 @@ func RecordInstall(coachDir, name, source, sha string, score int, agents []strin
 		provenance = &InstalledSkills{}
 	}
 
-	provenance.AddSkill(&pkg.InstalledSkill{
+	provenance.AddSkill(&types.InstalledSkill{
 		Name:        name,
 		Source:      source,
 		CommitSHA:   sha,

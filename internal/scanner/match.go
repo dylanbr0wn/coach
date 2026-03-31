@@ -6,7 +6,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/dylanbr0wn/coach/pkg"
+	"github.com/dylanbr0wn/coach/internal/types"
 )
 
 // source describes a single piece of content to scan.
@@ -21,11 +21,11 @@ type source struct {
 func matchPatterns(
 	category string,
 	sources []source,
-	patterns []pkg.Pattern,
-) (findings []pkg.Finding, compileErrs []error) {
+	patterns []types.Pattern,
+) (findings []types.Finding, compileErrs []error) {
 	// Filter and compile patterns once.
 	type compiled struct {
-		pattern pkg.Pattern
+		pattern types.Pattern
 		re      *regexp.Regexp
 	}
 	var ready []compiled
@@ -49,10 +49,10 @@ func matchPatterns(
 			}
 			matches := c.re.FindAllStringIndex(src.content, -1)
 			for _, m := range matches {
-				findings = append(findings, pkg.Finding{
+				findings = append(findings, types.Finding{
 					ID:          c.pattern.ID,
 					Category:    c.pattern.Category,
-					Severity:    pkg.SeverityFromString(c.pattern.Severity),
+					Severity:    types.SeverityFromString(c.pattern.Severity),
 					Name:        c.pattern.Name,
 					Description: c.pattern.Description,
 					File:        src.filePath,

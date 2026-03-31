@@ -5,12 +5,12 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/dylanbr0wn/coach/pkg"
+	"github.com/dylanbr0wn/coach/internal/types"
 	"gopkg.in/yaml.v3"
 )
 
 type InstalledSkills struct {
-	Skills []pkg.InstalledSkill `yaml:"skills"`
+	Skills []types.InstalledSkill `yaml:"skills"`
 }
 
 func LoadProvenance(coachDir string) (*InstalledSkills, error) {
@@ -39,7 +39,7 @@ func SaveProvenance(coachDir string, installed *InstalledSkills) error {
 	return os.WriteFile(path, data, 0o644)
 }
 
-func (is *InstalledSkills) AddSkill(skill *pkg.InstalledSkill) {
+func (is *InstalledSkills) AddSkill(skill *types.InstalledSkill) {
 	for i, existing := range is.Skills {
 		if existing.Name == skill.Name {
 			is.Skills[i] = *skill

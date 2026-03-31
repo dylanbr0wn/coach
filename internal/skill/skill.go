@@ -7,12 +7,12 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/dylanbr0wn/coach/pkg"
+	"github.com/dylanbr0wn/coach/internal/types"
 	"gopkg.in/yaml.v3"
 )
 
 // Parse reads a SKILL.md from the given directory and returns a parsed Skill.
-func Parse(dir string) (*pkg.Skill, error) {
+func Parse(dir string) (*types.Skill, error) {
 	skillPath := filepath.Join(dir, "SKILL.md")
 	data, err := os.ReadFile(skillPath)
 	if err != nil {
@@ -24,7 +24,7 @@ func Parse(dir string) (*pkg.Skill, error) {
 		return nil, fmt.Errorf("parsing frontmatter: %w", err)
 	}
 
-	var s pkg.Skill
+	var s types.Skill
 	if err := yaml.Unmarshal(frontmatter, &s); err != nil {
 		return nil, fmt.Errorf("parsing YAML frontmatter: %w", err)
 	}
@@ -44,7 +44,7 @@ func Parse(dir string) (*pkg.Skill, error) {
 }
 
 // Validate checks a parsed skill for spec compliance issues.
-func Validate(s *pkg.Skill) []string {
+func Validate(s *types.Skill) []string {
 	var errs []string
 	if len(s.Name) > 64 {
 		errs = append(errs, fmt.Sprintf("name is %d chars, max is 64", len(s.Name)))
@@ -61,7 +61,7 @@ func Validate(s *pkg.Skill) []string {
 	return errs
 }
 
-func validateRequired(s *pkg.Skill) error {
+func validateRequired(s *types.Skill) error {
 	if s.Name == "" {
 		return fmt.Errorf("required field 'name' is missing from frontmatter")
 	}

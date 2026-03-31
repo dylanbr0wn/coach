@@ -15,7 +15,7 @@ import (
 	"github.com/dylanbr0wn/coach/internal/scanner"
 	"github.com/dylanbr0wn/coach/internal/skill"
 	"github.com/dylanbr0wn/coach/internal/ui"
-	"github.com/dylanbr0wn/coach/pkg"
+	"github.com/dylanbr0wn/coach/internal/types"
 )
 
 var (
@@ -122,7 +122,7 @@ func runInstall(cmd *cobra.Command, args []string) error {
 	}
 
 	if installAgent != "" {
-		var filtered []pkg.DetectedAgent
+		var filtered []types.DetectedAgent
 		for _, a := range installedAgents {
 			if a.Config.Name == installAgent {
 				filtered = append(filtered, a)
@@ -147,17 +147,21 @@ func runInstall(cmd *cobra.Command, args []string) error {
 			continue
 		}
 
-		result := scanner.ScanSkill(s, db)
+		result, err := scanner.ScanSkill(s, db)
+		if err != nil {
+			fmt.Println(ui.Error(fmt.Sprintf("Scan failed for %s: %v", filepath.Base(sp), err), ""))
+			continue
+		}
 		fmt.Println(ui.RenderScanSummary(result))
 		fmt.Println()
 
-		if result.Risk == pkg.RiskCritical && !installForce {
+		if result.Risk == types.RiskCritical && !installForce {
 			fmt.Println(ui.Error("Blocked", "use --force to override"))
 			fmt.Println()
 			continue
 		}
 
-		if result.Risk >= pkg.RiskMedium && !installForce {
+		if result.Risk >= types.RiskMedium && !installForce {
 			proceed := false
 			if err := huh.NewConfirm().
 				Title("Security warnings found. Install anyway?").

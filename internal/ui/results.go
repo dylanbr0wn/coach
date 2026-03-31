@@ -5,10 +5,10 @@ import (
 	"strings"
 
 	"github.com/charmbracelet/lipgloss"
-	"github.com/dylanbr0wn/coach/pkg"
+	"github.com/dylanbr0wn/coach/internal/types"
 )
 
-func RenderFindings(findings []pkg.Finding) string {
+func RenderFindings(findings []types.Finding) string {
 	if len(findings) == 0 {
 		return SuccessStyle.Render("  No issues found")
 	}
@@ -38,7 +38,7 @@ func RenderFindings(findings []pkg.Finding) string {
 	return sb.String()
 }
 
-func RenderScanSummary(result *pkg.ScanResult) string {
+func RenderScanSummary(result *types.ScanResult) string {
 	riskStyle := riskLevelStyle(result.Risk)
 	skillName := result.SkillPath
 	header := fmt.Sprintf("  %s — Risk: %s (score: %d/100)",
@@ -48,14 +48,14 @@ func RenderScanSummary(result *pkg.ScanResult) string {
 	)
 	counts := countBySeverity(result.Findings)
 	var parts []string
-	if counts[pkg.SeverityCritical] > 0 {
-		parts = append(parts, ErrorStyle.Render(fmt.Sprintf("%d critical", counts[pkg.SeverityCritical])))
+	if counts[types.SeverityCritical] > 0 {
+		parts = append(parts, ErrorStyle.Render(fmt.Sprintf("%d critical", counts[types.SeverityCritical])))
 	}
-	if counts[pkg.SeverityHigh] > 0 {
-		parts = append(parts, ErrorStyle.Render(fmt.Sprintf("%d high", counts[pkg.SeverityHigh])))
+	if counts[types.SeverityHigh] > 0 {
+		parts = append(parts, ErrorStyle.Render(fmt.Sprintf("%d high", counts[types.SeverityHigh])))
 	}
-	if counts[pkg.SeverityWarning] > 0 {
-		parts = append(parts, WarningStyle.Render(fmt.Sprintf("%d warnings", counts[pkg.SeverityWarning])))
+	if counts[types.SeverityWarning] > 0 {
+		parts = append(parts, WarningStyle.Render(fmt.Sprintf("%d warnings", counts[types.SeverityWarning])))
 	}
 	summary := ""
 	if len(parts) > 0 {
@@ -64,43 +64,43 @@ func RenderScanSummary(result *pkg.ScanResult) string {
 	return BoxStyle.Render(header + summary)
 }
 
-func severityIcon(s pkg.Severity) string {
+func severityIcon(s types.Severity) string {
 	switch {
-	case s >= pkg.SeverityCritical:
+	case s >= types.SeverityCritical:
 		return ErrorStyle.Render("✗")
-	case s >= pkg.SeverityHigh:
+	case s >= types.SeverityHigh:
 		return ErrorStyle.Render("!")
-	case s >= pkg.SeverityWarning:
+	case s >= types.SeverityWarning:
 		return WarningStyle.Render("⚠")
 	default:
 		return InfoStyle.Render("ℹ")
 	}
 }
 
-func severityStyle(s pkg.Severity) lipgloss.Style {
+func severityStyle(s types.Severity) lipgloss.Style {
 	switch {
-	case s >= pkg.SeverityHigh:
+	case s >= types.SeverityHigh:
 		return ErrorStyle
-	case s >= pkg.SeverityWarning:
+	case s >= types.SeverityWarning:
 		return WarningStyle
 	default:
 		return InfoStyle
 	}
 }
 
-func riskLevelStyle(r pkg.RiskLevel) lipgloss.Style {
+func riskLevelStyle(r types.RiskLevel) lipgloss.Style {
 	switch r {
-	case pkg.RiskCritical, pkg.RiskHigh:
+	case types.RiskCritical, types.RiskHigh:
 		return ErrorStyle
-	case pkg.RiskMedium:
+	case types.RiskMedium:
 		return WarningStyle
 	default:
 		return SuccessStyle
 	}
 }
 
-func countBySeverity(findings []pkg.Finding) map[pkg.Severity]int {
-	counts := make(map[pkg.Severity]int)
+func countBySeverity(findings []types.Finding) map[types.Severity]int {
+	counts := make(map[types.Severity]int)
 	for _, f := range findings {
 		counts[f.Severity]++
 	}

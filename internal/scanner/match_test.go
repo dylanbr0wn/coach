@@ -3,11 +3,11 @@ package scanner
 import (
 	"testing"
 
-	"github.com/dylanbr0wn/coach/pkg"
+	"github.com/dylanbr0wn/coach/internal/types"
 )
 
 func TestMatchPatternsFindsMatches(t *testing.T) {
-	patterns := []pkg.Pattern{
+	patterns := []types.Pattern{
 		{
 			ID:          "TEST-001",
 			Category:    "test-cat",
@@ -48,8 +48,8 @@ func TestMatchPatternsFindsMatches(t *testing.T) {
 		}
 	})
 	t.Run("Severity", func(t *testing.T) {
-		if f.Severity != pkg.SeverityHigh {
-			t.Errorf("matchPatterns().Severity = %v, want %v", f.Severity, pkg.SeverityHigh)
+		if f.Severity != types.SeverityHigh {
+			t.Errorf("matchPatterns().Severity = %v, want %v", f.Severity, types.SeverityHigh)
 		}
 	})
 	t.Run("File", func(t *testing.T) {
@@ -60,7 +60,7 @@ func TestMatchPatternsFindsMatches(t *testing.T) {
 }
 
 func TestMatchPatternsFiltersByCategory(t *testing.T) {
-	patterns := []pkg.Pattern{
+	patterns := []types.Pattern{
 		{ID: "A", Category: "cat-a", Severity: "high", Regex: `foo`, FileTypes: []string{"*.md"}},
 		{ID: "B", Category: "cat-b", Severity: "high", Regex: `foo`, FileTypes: []string{"*.md"}},
 	}
@@ -79,7 +79,7 @@ func TestMatchPatternsFiltersByCategory(t *testing.T) {
 }
 
 func TestMatchPatternsCollectsCompileErrors(t *testing.T) {
-	patterns := []pkg.Pattern{
+	patterns := []types.Pattern{
 		{ID: "BAD", Category: "test", Severity: "high", Regex: `[`, FileTypes: []string{"*.md"}},
 		{ID: "GOOD", Category: "test", Severity: "high", Regex: `foo`, FileTypes: []string{"*.md"}},
 	}
@@ -98,7 +98,7 @@ func TestMatchPatternsCollectsCompileErrors(t *testing.T) {
 }
 
 func TestMatchPatternsFiltersFileType(t *testing.T) {
-	patterns := []pkg.Pattern{
+	patterns := []types.Pattern{
 		{ID: "SH-ONLY", Category: "test", Severity: "high", Regex: `foo`, FileTypes: []string{"*.sh"}},
 	}
 	sources := []source{
@@ -113,7 +113,7 @@ func TestMatchPatternsFiltersFileType(t *testing.T) {
 }
 
 func TestMatchPatternsSkipsEmptyRegex(t *testing.T) {
-	patterns := []pkg.Pattern{
+	patterns := []types.Pattern{
 		{ID: "EMPTY", Category: "test", Severity: "high", Regex: "", FileTypes: []string{"*.md"}},
 	}
 	sources := []source{
@@ -131,7 +131,7 @@ func TestMatchPatternsSkipsEmptyRegex(t *testing.T) {
 }
 
 func TestMatchPatternsMultipleSources(t *testing.T) {
-	patterns := []pkg.Pattern{
+	patterns := []types.Pattern{
 		{ID: "P1", Category: "test", Severity: "warning", Regex: `TODO`, FileTypes: []string{"*.go"}},
 	}
 	sources := []source{

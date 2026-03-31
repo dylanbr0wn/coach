@@ -5,15 +5,15 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/dylanbr0wn/coach/pkg"
+	"github.com/dylanbr0wn/coach/internal/types"
 	"gopkg.in/yaml.v3"
 )
 
 // LoadPatterns loads the pattern database. If overrideDir is non-empty,
 // it merges patterns from that directory on top of the embedded defaults.
 // Remote patterns take priority (matched by ID).
-func LoadPatterns(overrideDir string) (*pkg.PatternDatabase, error) {
-	var db pkg.PatternDatabase
+func LoadPatterns(overrideDir string) (*types.PatternDatabase, error) {
+	var db types.PatternDatabase
 	if err := yaml.Unmarshal(embeddedPatterns, &db); err != nil {
 		return nil, fmt.Errorf("parsing embedded patterns: %w", err)
 	}
@@ -31,7 +31,7 @@ func LoadPatterns(overrideDir string) (*pkg.PatternDatabase, error) {
 		return nil, fmt.Errorf("reading override patterns: %w", err)
 	}
 
-	var override pkg.PatternDatabase
+	var override types.PatternDatabase
 	if err := yaml.Unmarshal(data, &override); err != nil {
 		return nil, fmt.Errorf("parsing override patterns: %w", err)
 	}
@@ -42,8 +42,8 @@ func LoadPatterns(overrideDir string) (*pkg.PatternDatabase, error) {
 
 // LoadAgentRegistry loads the agent registry. If overrideDir is non-empty,
 // it merges agents from that directory on top of the embedded defaults.
-func LoadAgentRegistry(overrideDir string) (*pkg.AgentRegistry, error) {
-	var reg pkg.AgentRegistry
+func LoadAgentRegistry(overrideDir string) (*types.AgentRegistry, error) {
+	var reg types.AgentRegistry
 	if err := yaml.Unmarshal(embeddedAgents, &reg); err != nil {
 		return nil, fmt.Errorf("parsing embedded agents: %w", err)
 	}
@@ -61,7 +61,7 @@ func LoadAgentRegistry(overrideDir string) (*pkg.AgentRegistry, error) {
 		return nil, fmt.Errorf("reading override agents: %w", err)
 	}
 
-	var override pkg.AgentRegistry
+	var override types.AgentRegistry
 	if err := yaml.Unmarshal(data, &override); err != nil {
 		return nil, fmt.Errorf("parsing override agents: %w", err)
 	}
@@ -74,7 +74,7 @@ func LoadAgentRegistry(overrideDir string) (*pkg.AgentRegistry, error) {
 
 // mergePatterns merges override patterns into base. Override patterns
 // with matching IDs replace base patterns. New override patterns are appended.
-func mergePatterns(base, override pkg.PatternDatabase) pkg.PatternDatabase {
+func mergePatterns(base, override types.PatternDatabase) types.PatternDatabase {
 	idIndex := make(map[string]int, len(base.Patterns))
 	for i, p := range base.Patterns {
 		idIndex[p.ID] = i

@@ -18,7 +18,7 @@ import (
 	"github.com/dylanbr0wn/coach/internal/resolve"
 	"github.com/dylanbr0wn/coach/internal/skill"
 	"github.com/dylanbr0wn/coach/internal/ui"
-	"github.com/dylanbr0wn/coach/pkg"
+	"github.com/dylanbr0wn/coach/internal/types"
 )
 
 var (
@@ -55,7 +55,7 @@ func runListWithHome(w io.Writer, home, coachDir, agentFilter, format string) er
 		return fmt.Errorf("unsupported format %q (use \"table\" or \"json\")", format)
 	}
 
-	var agents []pkg.DetectedAgent
+	var agents []types.DetectedAgent
 	var err error
 	if home != "" {
 		agents, err = agent.DetectAgentsInHome(home)
@@ -70,7 +70,7 @@ func runListWithHome(w io.Writer, home, coachDir, agentFilter, format string) er
 
 	// Filter by agent key if requested
 	if agentFilter != "" {
-		var filtered []pkg.DetectedAgent
+		var filtered []types.DetectedAgent
 		for _, a := range installed {
 			if a.Key == agentFilter {
 				filtered = append(filtered, a)
@@ -104,13 +104,19 @@ func runListWithHome(w io.Writer, home, coachDir, agentFilter, format string) er
 	}
 
 	// --- Managed Skills Section ---
-	workDir, _ := os.Getwd()
+	workDir, err := os.Getwd()
+	if err != nil {
+		return fmt.Errorf("getting working directory: %w", err)
+	}
 	r := resolve.Resolver{
 		GlobalSkillsDir: filepath.Join(coachDir, "skills"),
 		WorkDir:         workDir,
 	}
 
-	managed, _ := r.List(resolve.ScopeAny)
+	managed, err := r.List(resolve.ScopeAny)
+	if err != nil {
+		return fmt.Errorf("listing managed skills: %w", err)
+	}
 
 	// Build a set of agent skill dirs for sync-status lookup
 	agentSkillNames := make(map[string][]string) // skill name -> agent names

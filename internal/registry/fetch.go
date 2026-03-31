@@ -106,7 +106,6 @@ func FetchToCache(src *Source) (localPath, commitSHA string, err error) {
 		if path, sha, ok := tryUpdateCache(destPath); ok {
 			return path, sha, nil
 		}
-		os.RemoveAll(destPath)
 	}
 
 	repo, err := git.PlainClone(destPath, false, &git.CloneOptions{

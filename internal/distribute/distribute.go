@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/dylanbr0wn/coach/pkg"
+	"github.com/dylanbr0wn/coach/internal/types"
 )
 
 // Status describes the outcome of a distribution operation for one agent.
@@ -44,7 +44,7 @@ type DistResult struct {
 
 // Distribute symlinks skillDir into each installed agent's skill directory as
 // <agent.SkillDir>/<skillName>. Agents that are not installed are skipped.
-func Distribute(skillDir, skillName string, agents []pkg.DetectedAgent) ([]DistResult, error) {
+func Distribute(skillDir, skillName string, agents []types.DetectedAgent) ([]DistResult, error) {
 	results := make([]DistResult, 0, len(agents))
 
 	for _, agent := range agents {
@@ -106,13 +106,13 @@ func Distribute(skillDir, skillName string, agents []pkg.DetectedAgent) ([]DistR
 
 // FilterAgentsByNames returns only those agents whose Key or Config.Name appears in names.
 // This allows matching by registry key (e.g., "claude-code") or display name (e.g., "Claude Code").
-func FilterAgentsByNames(agents []pkg.DetectedAgent, names []string) []pkg.DetectedAgent {
+func FilterAgentsByNames(agents []types.DetectedAgent, names []string) []types.DetectedAgent {
 	set := make(map[string]struct{}, len(names))
 	for _, n := range names {
 		set[n] = struct{}{}
 	}
 
-	filtered := make([]pkg.DetectedAgent, 0, len(agents))
+	filtered := make([]types.DetectedAgent, 0, len(agents))
 	for _, a := range agents {
 		if _, ok := set[a.Config.Name]; ok {
 			filtered = append(filtered, a)

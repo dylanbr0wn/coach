@@ -6,14 +6,14 @@ import (
 	"testing"
 
 	"github.com/dylanbr0wn/coach/internal/distribute"
-	"github.com/dylanbr0wn/coach/pkg"
+	"github.com/dylanbr0wn/coach/internal/types"
 )
 
-func makeAgent(t *testing.T, name string, installed bool) (agent pkg.DetectedAgent, skillDir string) {
+func makeAgent(t *testing.T, name string, installed bool) (agent types.DetectedAgent, skillDir string) {
 	t.Helper()
 	skillDir = t.TempDir()
-	return pkg.DetectedAgent{
-		Config: pkg.AgentConfig{
+	return types.DetectedAgent{
+		Config: types.AgentConfig{
 			Name: name,
 		},
 		Installed: installed,
@@ -25,7 +25,7 @@ func TestDistributeCreatesSymlink(t *testing.T) {
 	source := t.TempDir()
 	agent, agentSkillDir := makeAgent(t, "claude", true)
 
-	results, err := distribute.Distribute(source, "my-skill", []pkg.DetectedAgent{agent})
+	results, err := distribute.Distribute(source, "my-skill", []types.DetectedAgent{agent})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -62,7 +62,7 @@ func TestDistributeAlreadyLinked(t *testing.T) {
 		t.Fatalf("setup: %v", err)
 	}
 
-	results, err := distribute.Distribute(source, "my-skill", []pkg.DetectedAgent{agent})
+	results, err := distribute.Distribute(source, "my-skill", []types.DetectedAgent{agent})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -87,7 +87,7 @@ func TestDistributeUpdatesStaleSymlink(t *testing.T) {
 		t.Fatalf("setup: %v", err)
 	}
 
-	results, err := distribute.Distribute(source, "my-skill", []pkg.DetectedAgent{agent})
+	results, err := distribute.Distribute(source, "my-skill", []types.DetectedAgent{agent})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -114,7 +114,7 @@ func TestDistributeSkipsUninstalledAgents(t *testing.T) {
 	agent, _ := makeAgent(t, "cursor", false)
 	agent.Installed = false
 
-	results, err := distribute.Distribute(source, "my-skill", []pkg.DetectedAgent{agent})
+	results, err := distribute.Distribute(source, "my-skill", []types.DetectedAgent{agent})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -129,10 +129,10 @@ func TestDistributeSkipsUninstalledAgents(t *testing.T) {
 }
 
 func TestFilterAgentsByNames(t *testing.T) {
-	agents := []pkg.DetectedAgent{
-		{Config: pkg.AgentConfig{Name: "claude"}, Installed: true},
-		{Config: pkg.AgentConfig{Name: "cursor"}, Installed: true},
-		{Config: pkg.AgentConfig{Name: "windsurf"}, Installed: false},
+	agents := []types.DetectedAgent{
+		{Config: types.AgentConfig{Name: "claude"}, Installed: true},
+		{Config: types.AgentConfig{Name: "cursor"}, Installed: true},
+		{Config: types.AgentConfig{Name: "windsurf"}, Installed: false},
 	}
 
 	filtered := distribute.FilterAgentsByNames(agents, []string{"claude", "windsurf"})
@@ -153,9 +153,9 @@ func TestFilterAgentsByNames(t *testing.T) {
 }
 
 func TestFilterAgentsByNames_MatchesKey(t *testing.T) {
-	agents := []pkg.DetectedAgent{
-		{Key: "claude-code", Config: pkg.AgentConfig{Name: "Claude Code"}, Installed: true},
-		{Key: "cursor", Config: pkg.AgentConfig{Name: "Cursor"}, Installed: true},
+	agents := []types.DetectedAgent{
+		{Key: "claude-code", Config: types.AgentConfig{Name: "Claude Code"}, Installed: true},
+		{Key: "cursor", Config: types.AgentConfig{Name: "Cursor"}, Installed: true},
 	}
 
 	filtered := distribute.FilterAgentsByNames(agents, []string{"claude-code"})

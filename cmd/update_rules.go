@@ -71,7 +71,9 @@ func fetchRules(repoDir, source string) (sha string, upToDate bool, err error) {
 			if wtErr == nil {
 				pullErr := w.Pull(&git.PullOptions{Force: true})
 				if pullErr != nil && pullErr != git.NoErrAlreadyUpToDate {
-					os.RemoveAll(repoDir)
+					if removeErr := os.RemoveAll(repoDir); removeErr != nil {
+						return "", false, fmt.Errorf("removing stale rules repo: %w", removeErr)
+					}
 				} else {
 					head, _ := repo.Head()
 					sha = "unknown"
@@ -84,7 +86,9 @@ func fetchRules(repoDir, source string) (sha string, upToDate bool, err error) {
 		}
 	}
 
-	os.RemoveAll(repoDir)
+	if removeErr := os.RemoveAll(repoDir); removeErr != nil {
+		return "", false, fmt.Errorf("removing rules repo before clone: %w", removeErr)
+	}
 	repo, cloneErr := git.PlainClone(repoDir, false, &git.CloneOptions{
 		URL:           source,
 		Depth:         1,

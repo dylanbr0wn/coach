@@ -14,7 +14,7 @@ import (
 	"github.com/dylanbr0wn/coach/internal/scanner"
 	"github.com/dylanbr0wn/coach/internal/skill"
 	"github.com/dylanbr0wn/coach/internal/ui"
-	"github.com/dylanbr0wn/coach/pkg"
+	"github.com/dylanbr0wn/coach/internal/types"
 )
 
 var lintJSON bool
@@ -72,15 +72,15 @@ func lintAllManaged() error {
 		return nil
 	}
 
-	var exitCode int
+	var hasErrors bool
 	for _, m := range managed {
 		if err := lintSingleSkill(m.Dir); err != nil {
-			exitCode = 1
+			hasErrors = true
 		}
 	}
 
-	if exitCode != 0 {
-		os.Exit(1)
+	if hasErrors {
+		return fmt.Errorf("lint found errors")
 	}
 	return nil
 }
@@ -103,19 +103,22 @@ func lintSingleSkill(path string) error {
 		return fmt.Errorf("loading patterns: %w", err)
 	}
 
-	result := scanner.ScanSkill(s, db)
+	result, err := scanner.ScanSkill(s, db)
+	if err != nil {
+		return fmt.Errorf("scanning skill: %w", err)
+	}
 
 	for _, ve := range validationErrors {
-		result.Findings = append([]pkg.Finding{{
+		result.Findings = append([]types.Finding{{
 			ID:          "SPEC-001",
 			Category:    "spec-compliance",
-			Severity:    pkg.SeverityHigh,
+			Severity:    types.SeverityHigh,
 			Name:        "Spec violation",
 			Description: ve,
 			File:        s.Path + "/SKILL.md",
 		}}, result.Findings...)
 		result.Score = scanner.CalculateScore(result.Findings)
-		result.Risk = pkg.RiskLevelFromScore(result.Score)
+		result.Risk = types.RiskLevelFromScore(result.Score)
 	}
 
 	if lintJSON {
@@ -137,7 +140,7 @@ func lintSingleSkill(path string) error {
 	)
 
 	for _, f := range result.Findings {
-		if f.Severity >= pkg.SeverityHigh {
+		if f.Severity >= types.SeverityHigh {
 			return fmt.Errorf("high severity finding: %s", f.Name)
 		}
 	}
@@ -149,19 +152,19 @@ func lintSingleSkill(path string) error {
 	return nil
 }
 
-func countFindingSeverities(findings []pkg.Finding) map[string]int {
+func countFindingSeverities(findings []types.Finding) map[string]int {
 	counts := map[string]int{"errors": 0, "warnings": 0}
 	for _, f := range findings {
-		if f.Severity >= pkg.SeverityHigh {
+		if f.Severity >= types.SeverityHigh {
 			counts["errors"]++
-		} else if f.Severity >= pkg.SeverityWarning {
+		} else if f.Severity >= types.SeverityWarning {
 			counts["warnings"]++
 		}
 	}
 	return counts
 }
 
-func outputJSON(result *pkg.ScanResult) error {
+func outputJSON(result *types.ScanResult) error {
 	data, err := json.MarshalIndent(result, "", "  ")
 	if err != nil {
 		return err

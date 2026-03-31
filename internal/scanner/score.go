@@ -1,8 +1,8 @@
 package scanner
 
-import "github.com/dylanbr0wn/coach/pkg"
+import "github.com/dylanbr0wn/coach/internal/types"
 
-func CalculateScore(findings []pkg.Finding) int {
+func CalculateScore(findings []types.Finding) int {
 	idCount := make(map[string]int)
 	score := 0
 	for _, f := range findings {

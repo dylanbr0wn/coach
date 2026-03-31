@@ -5,11 +5,11 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/dylanbr0wn/coach/pkg"
+	"github.com/dylanbr0wn/coach/internal/types"
 )
 
 // DetectAgents finds which coding agents are installed on the current system.
-func DetectAgents(overrideDir string) ([]pkg.DetectedAgent, error) {
+func DetectAgents(overrideDir string) ([]types.DetectedAgent, error) {
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return nil, err
@@ -19,7 +19,7 @@ func DetectAgents(overrideDir string) ([]pkg.DetectedAgent, error) {
 
 // DetectAgentsInHome finds agents using the given home directory.
 // overrideDir is optional — pass "" to use embedded registry only.
-func DetectAgentsInHome(home string, overrideDir ...string) ([]pkg.DetectedAgent, error) {
+func DetectAgentsInHome(home string, overrideDir ...string) ([]types.DetectedAgent, error) {
 	override := ""
 	if len(overrideDir) > 0 {
 		override = overrideDir[0]
@@ -30,12 +30,12 @@ func DetectAgentsInHome(home string, overrideDir ...string) ([]pkg.DetectedAgent
 		return nil, err
 	}
 
-	var detected []pkg.DetectedAgent
+	var detected []types.DetectedAgent
 	for key, agentCfg := range reg.Agents {
 		resolvedDir := resolveHomePath(agentCfg.SkillDir, home)
 		installed := dirExists(resolvedDir)
 
-		detected = append(detected, pkg.DetectedAgent{
+		detected = append(detected, types.DetectedAgent{
 			Key:       key,
 			Config:    agentCfg,
 			Installed: installed,
@@ -47,8 +47,8 @@ func DetectAgentsInHome(home string, overrideDir ...string) ([]pkg.DetectedAgent
 }
 
 // InstalledAgents returns only agents that are actually present on the system.
-func InstalledAgents(agents []pkg.DetectedAgent) []pkg.DetectedAgent {
-	var installed []pkg.DetectedAgent
+func InstalledAgents(agents []types.DetectedAgent) []types.DetectedAgent {
+	var installed []types.DetectedAgent
 	for _, a := range agents {
 		if a.Installed {
 			installed = append(installed, a)

@@ -7,7 +7,7 @@ import (
 
 	"github.com/dylanbr0wn/coach/internal/rules"
 	"github.com/dylanbr0wn/coach/internal/skill"
-	"github.com/dylanbr0wn/coach/pkg"
+	"github.com/dylanbr0wn/coach/internal/types"
 )
 
 func testdataDir() string {
@@ -15,7 +15,7 @@ func testdataDir() string {
 	return filepath.Join(filepath.Dir(filename), "..", "..", "testdata")
 }
 
-func loadTestPatterns(t *testing.T) *pkg.PatternDatabase {
+func loadTestPatterns(t *testing.T) *types.PatternDatabase {
 	t.Helper()
 	db, err := rules.LoadPatterns("")
 	if err != nil {
@@ -30,9 +30,12 @@ func TestScanValidSkill(t *testing.T) {
 		t.Fatalf("Parse error: %v", err)
 	}
 	db := loadTestPatterns(t)
-	result := ScanSkill(s, db)
+	result, err := ScanSkill(s, db)
+	if err != nil {
+		t.Fatalf("ScanSkill error: %v", err)
+	}
 
-	if result.Risk != pkg.RiskLow {
+	if result.Risk != types.RiskLow {
 		t.Errorf("Risk = %v, want LOW. Findings: %v", result.Risk, result.Findings)
 	}
 }
@@ -43,9 +46,12 @@ func TestScanMaliciousSkill(t *testing.T) {
 		t.Fatalf("Parse error: %v", err)
 	}
 	db := loadTestPatterns(t)
-	result := ScanSkill(s, db)
+	result, err := ScanSkill(s, db)
+	if err != nil {
+		t.Fatalf("ScanSkill error: %v", err)
+	}
 
-	if result.Risk == pkg.RiskLow {
+	if result.Risk == types.RiskLow {
 		t.Error("expected malicious skill to have risk > LOW")
 	}
 
@@ -77,10 +83,10 @@ func TestScanMaliciousSkill(t *testing.T) {
 }
 
 func TestScoreCalculation(t *testing.T) {
-	findings := []pkg.Finding{
-		{Severity: pkg.SeverityCritical, ID: "PI-001"},
-		{Severity: pkg.SeverityCritical, ID: "PI-002"},
-		{Severity: pkg.SeverityHigh, ID: "SC-001"},
+	findings := []types.Finding{
+		{Severity: types.SeverityCritical, ID: "PI-001"},
+		{Severity: types.SeverityCritical, ID: "PI-002"},
+		{Severity: types.SeverityHigh, ID: "SC-001"},
 	}
 	score := CalculateScore(findings)
 
@@ -90,11 +96,11 @@ func TestScoreCalculation(t *testing.T) {
 }
 
 func TestScoreCapsAt100(t *testing.T) {
-	findings := []pkg.Finding{
-		{Severity: pkg.SeverityCritical, ID: "PI-001"},
-		{Severity: pkg.SeverityCritical, ID: "PI-002"},
-		{Severity: pkg.SeverityCritical, ID: "PI-003"},
-		{Severity: pkg.SeverityCritical, ID: "PI-004"},
+	findings := []types.Finding{
+		{Severity: types.SeverityCritical, ID: "PI-001"},
+		{Severity: types.SeverityCritical, ID: "PI-002"},
+		{Severity: types.SeverityCritical, ID: "PI-003"},
+		{Severity: types.SeverityCritical, ID: "PI-004"},
 	}
 	score := CalculateScore(findings)
 
@@ -104,10 +110,10 @@ func TestScoreCapsAt100(t *testing.T) {
 }
 
 func TestScoreDuplicatesCappedAt2x(t *testing.T) {
-	findings := []pkg.Finding{
-		{Severity: pkg.SeverityCritical, ID: "PI-001"},
-		{Severity: pkg.SeverityCritical, ID: "PI-001"},
-		{Severity: pkg.SeverityCritical, ID: "PI-001"},
+	findings := []types.Finding{
+		{Severity: types.SeverityCritical, ID: "PI-001"},
+		{Severity: types.SeverityCritical, ID: "PI-001"},
+		{Severity: types.SeverityCritical, ID: "PI-001"},
 	}
 	score := CalculateScore(findings)
 
@@ -117,7 +123,7 @@ func TestScoreDuplicatesCappedAt2x(t *testing.T) {
 }
 
 func TestQualityWarnings(t *testing.T) {
-	s := &pkg.Skill{
+	s := &types.Skill{
 		Name:        "test",
 		Description: "Short",
 		Body:        "Some body",

@@ -9,7 +9,7 @@ import (
 	"github.com/dylanbr0wn/coach/internal/distribute"
 	"github.com/dylanbr0wn/coach/internal/resolve"
 	"github.com/dylanbr0wn/coach/internal/skill"
-	"github.com/dylanbr0wn/coach/pkg"
+	"github.com/dylanbr0wn/coach/internal/types"
 )
 
 func TestFullWorkflow(t *testing.T) {
@@ -88,9 +88,9 @@ Use when the user asks to review tests or check test coverage.
 	}
 
 	// Step 4: Distribute
-	agents := []pkg.DetectedAgent{
+	agents := []types.DetectedAgent{
 		{
-			Config:    pkg.AgentConfig{Name: "claude-code", SkillDir: agentSkillDir + "/"},
+			Config:    types.AgentConfig{Name: "claude-code", SkillDir: agentSkillDir + "/"},
 			Installed: true,
 			SkillDir:  agentSkillDir,
 		},
