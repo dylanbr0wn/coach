@@ -6,32 +6,40 @@ import (
 )
 
 func TestGetEditor(t *testing.T) {
-	origEditor := os.Getenv("EDITOR")
-	origVisual := os.Getenv("VISUAL")
-	defer func() {
-		os.Setenv("EDITOR", origEditor)
-		os.Setenv("VISUAL", origVisual)
-	}()
+	tests := []struct {
+		name    string
+		editor  string
+		visual  string
+		want    string
+		wantErr bool
+	}{
+		{
+			name:   "EDITOR takes priority",
+			editor: "nvim",
+			visual: "code",
+			want:   "nvim",
+		},
+		{
+			name:   "falls back to VISUAL",
+			editor: "",
+			visual: "code",
+			want:   "code",
+		},
+	}
 
-	// $EDITOR takes priority.
-	os.Setenv("EDITOR", "nvim")
-	os.Setenv("VISUAL", "code")
-	editor, err := getEditor()
-	if err != nil {
-		t.Fatalf("getEditor failed: %v", err)
-	}
-	if editor != "nvim" {
-		t.Errorf("editor = %q, want %q", editor, "nvim")
-	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Setenv("EDITOR", tt.editor)
+			t.Setenv("VISUAL", tt.visual)
 
-	// Falls back to $VISUAL.
-	os.Setenv("EDITOR", "")
-	editor, err = getEditor()
-	if err != nil {
-		t.Fatalf("getEditor failed: %v", err)
-	}
-	if editor != "code" {
-		t.Errorf("editor = %q, want %q", editor, "code")
+			got, err := getEditor()
+			if (err != nil) != tt.wantErr {
+				t.Fatalf("getEditor() error = %v, wantErr %v", err, tt.wantErr)
+			}
+			if got != tt.want {
+				t.Errorf("getEditor() = %q, want %q", got, tt.want)
+			}
+		})
 	}
 }
 

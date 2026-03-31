@@ -7,13 +7,14 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	"github.com/spf13/cobra"
+
 	"github.com/dylanbr0wn/coach/internal/agent"
 	"github.com/dylanbr0wn/coach/internal/config"
 	"github.com/dylanbr0wn/coach/internal/registry"
 	"github.com/dylanbr0wn/coach/internal/resolve"
 	"github.com/dylanbr0wn/coach/internal/skill"
 	"github.com/dylanbr0wn/coach/internal/ui"
-	"github.com/spf13/cobra"
 )
 
 var statusCmd = &cobra.Command{

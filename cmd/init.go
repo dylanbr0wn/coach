@@ -7,9 +7,10 @@ import (
 	"strings"
 
 	"github.com/charmbracelet/huh"
+	"github.com/spf13/cobra"
+
 	"github.com/dylanbr0wn/coach/internal/config"
 	"github.com/dylanbr0wn/coach/internal/ui"
-	"github.com/spf13/cobra"
 )
 
 var initCmd = &cobra.Command{

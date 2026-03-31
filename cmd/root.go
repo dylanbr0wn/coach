@@ -5,8 +5,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/dylanbr0wn/coach/internal/ui"
 	"github.com/spf13/cobra"
+
+	"github.com/dylanbr0wn/coach/internal/ui"
 )
 
 var version = "0.1.0-dev"

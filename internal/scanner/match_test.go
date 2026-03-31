@@ -31,21 +31,32 @@ func TestMatchPatternsFindsMatches(t *testing.T) {
 		t.Fatalf("got %d findings, want 1", len(findings))
 	}
 	f := findings[0]
-	if f.ID != "TEST-001" {
-		t.Errorf("ID = %q, want TEST-001", f.ID)
-	}
-	if f.Line != 2 {
-		t.Errorf("Line = %d, want 2", f.Line)
-	}
-	if f.Match != "foo" {
-		t.Errorf("Match = %q, want \"foo\"", f.Match)
-	}
-	if f.Severity != pkg.SeverityHigh {
-		t.Errorf("Severity = %v, want High", f.Severity)
-	}
-	if f.File != "test.md" {
-		t.Errorf("File = %q, want \"test.md\"", f.File)
-	}
+
+	t.Run("ID", func(t *testing.T) {
+		if f.ID != "TEST-001" {
+			t.Errorf("matchPatterns().ID = %q, want %q", f.ID, "TEST-001")
+		}
+	})
+	t.Run("Line", func(t *testing.T) {
+		if f.Line != 2 {
+			t.Errorf("matchPatterns().Line = %d, want %d", f.Line, 2)
+		}
+	})
+	t.Run("Match", func(t *testing.T) {
+		if f.Match != "foo" {
+			t.Errorf("matchPatterns().Match = %q, want %q", f.Match, "foo")
+		}
+	})
+	t.Run("Severity", func(t *testing.T) {
+		if f.Severity != pkg.SeverityHigh {
+			t.Errorf("matchPatterns().Severity = %v, want %v", f.Severity, pkg.SeverityHigh)
+		}
+	})
+	t.Run("File", func(t *testing.T) {
+		if f.File != "test.md" {
+			t.Errorf("matchPatterns().File = %q, want %q", f.File, "test.md")
+		}
+	})
 }
 
 func TestMatchPatternsFiltersByCategory(t *testing.T) {

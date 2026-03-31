@@ -6,9 +6,10 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/dylanbr0wn/coach/internal/config"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
+
+	"github.com/dylanbr0wn/coach/internal/config"
 )
 
 type SourceType int
@@ -101,18 +102,9 @@ func FetchToCache(src *Source) (localPath, commitSHA string, err error) {
 	}
 	destPath := filepath.Join(cacheDir, repoDir)
 
-	if _, err := os.Stat(destPath); err == nil {
-		repo, err := git.PlainOpen(destPath)
-		if err == nil {
-			w, err := repo.Worktree()
-			if err == nil {
-				_ = w.Pull(&git.PullOptions{Force: true})
-			}
-			head, err := repo.Head()
-			if err == nil {
-				return destPath, head.Hash().String()[:12], nil
-			}
-			return destPath, "unknown", nil
+	if _, statErr := os.Stat(destPath); statErr == nil {
+		if path, sha, ok := tryUpdateCache(destPath); ok {
+			return path, sha, nil
 		}
 		os.RemoveAll(destPath)
 	}
@@ -159,6 +151,25 @@ func FindSkills(dir string) ([]string, error) {
 	}
 
 	return skills, nil
+}
+
+// tryUpdateCache attempts to pull the latest changes for an existing cached repo.
+// Returns the path, short SHA, and true on success; false if the cache should be rebuilt.
+func tryUpdateCache(destPath string) (string, string, bool) {
+	repo, err := git.PlainOpen(destPath)
+	if err != nil {
+		return "", "", false
+	}
+
+	if w, err := repo.Worktree(); err == nil {
+		_ = w.Pull(&git.PullOptions{Force: true})
+	}
+
+	head, err := repo.Head()
+	if err != nil {
+		return destPath, "unknown", true
+	}
+	return destPath, head.Hash().String()[:12], true
 }
 
 func sanitizePath(url string) string {

@@ -9,11 +9,12 @@ import (
 	"os/exec"
 	"path/filepath"
 
+	"github.com/spf13/cobra"
+
 	"github.com/dylanbr0wn/coach/internal/config"
 	"github.com/dylanbr0wn/coach/internal/resolve"
 	"github.com/dylanbr0wn/coach/internal/skill"
 	"github.com/dylanbr0wn/coach/internal/ui"
-	"github.com/spf13/cobra"
 )
 
 var (
@@ -47,7 +48,7 @@ func init() {
 func runEdit(cmd *cobra.Command, args []string) error {
 	editor, err := getEditor()
 	if err != nil {
-		return fmt.Errorf("no editor found: set $EDITOR or $VISUAL environment variable")
+		return fmt.Errorf("no editor found (%w): set $EDITOR or $VISUAL environment variable", err)
 	}
 
 	coachDir := config.DefaultCoachDir()
