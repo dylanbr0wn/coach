@@ -47,12 +47,17 @@ func runInstall(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	fmt.Printf("  Fetching from %s...\n", src.Raw)
-	localPath, sha, err := registry.FetchToCache(src)
-	if err != nil {
-		return fmt.Errorf("fetching source: %w", err)
+	var localPath string
+	var sha string
+	if spinErr := ui.WithSpinner(fmt.Sprintf("Fetching from %s", src.Raw), func() error {
+		var fetchErr error
+		localPath, sha, fetchErr = registry.FetchToCache(src)
+		return fetchErr
+	}); spinErr != nil {
+		return fmt.Errorf("fetching source: %w", spinErr)
 	}
-	fmt.Printf("  %s\n\n", ui.DimStyle.Render(fmt.Sprintf("commit: %s", sha)))
+	fmt.Println(ui.Success(fmt.Sprintf("Fetched %s", ui.DimStyle.Render(sha))))
+	fmt.Println()
 
 	skillPaths, err := registry.FindSkills(localPath)
 	if err != nil {
@@ -122,7 +127,7 @@ func runInstall(cmd *cobra.Command, args []string) error {
 	for _, sp := range skillPaths {
 		s, err := skill.Parse(sp)
 		if err != nil {
-			fmt.Printf("  %s Skipping %s: %v\n", ui.ErrorStyle.Render("✗"), filepath.Base(sp), err)
+			fmt.Println(ui.Error(fmt.Sprintf("Skipping %s: %v", filepath.Base(sp), err), ""))
 			continue
 		}
 
@@ -131,7 +136,7 @@ func runInstall(cmd *cobra.Command, args []string) error {
 		fmt.Println()
 
 		if result.Risk == pkg.RiskCritical && !installForce {
-			fmt.Println(ui.ErrorStyle.Render("  Blocked — use --force to override"))
+			fmt.Println(ui.Error("Blocked", "use --force to override"))
 			fmt.Println()
 			continue
 		}
@@ -155,16 +160,16 @@ func runInstall(cmd *cobra.Command, args []string) error {
 		opts := registry.InstallOptions{Copy: installCopy}
 		for _, a := range installedAgents {
 			if err := registry.InstallSkill(sp, a.SkillDir, opts); err != nil {
-				fmt.Printf("  %s Failed to install to %s: %v\n", ui.ErrorStyle.Render("✗"), a.Config.Name, err)
+				fmt.Println(ui.Error(fmt.Sprintf("Failed to install to %s: %v", a.Config.Name, err), ""))
 				continue
 			}
 			installedTo = append(installedTo, a.Config.Name)
-			fmt.Printf("  %s Installed to %s\n", ui.SuccessStyle.Render("✓"), a.Config.Name)
+			fmt.Println(ui.Success(fmt.Sprintf("Installed to %s", a.Config.Name)))
 		}
 
 		if len(installedTo) > 0 {
 			if err := registry.RecordInstall(coachDir, s.Name, src.Raw, sha, result.Score, installedTo); err != nil {
-				fmt.Printf("  %s Failed to record install: %v\n", ui.ErrorStyle.Render("✗"), err)
+				fmt.Println(ui.Error(fmt.Sprintf("Failed to record install: %v", err), ""))
 			}
 		}
 	}
