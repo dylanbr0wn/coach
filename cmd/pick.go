@@ -61,7 +61,7 @@ func pickManagedSkillOrNew(r *resolve.Resolver, scope resolve.Scope, title strin
 		return "", false, err
 	}
 
-	if idx == -2 {
+	if idx == ui.PickCreateNew {
 		return "", true, nil
 	}
 

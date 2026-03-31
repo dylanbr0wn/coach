@@ -78,7 +78,6 @@ func runGenerate(cmd *cobra.Command, args []string) error {
 			return pickErr
 		}
 		if isNew {
-			// Run init flow first, then return — user can run generate again.
 			return runInitSkill(cmd, nil)
 		}
 		name = picked

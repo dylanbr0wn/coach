@@ -7,6 +7,12 @@ import (
 	"github.com/charmbracelet/huh"
 )
 
+// PickResult sentinel values returned by PickSkill.
+const (
+	PickCancelled = -1
+	PickCreateNew = -2
+)
+
 // SkillOption represents a skill choice in the interactive picker.
 type SkillOption struct {
 	Name        string
@@ -16,22 +22,18 @@ type SkillOption struct {
 }
 
 // PickSkill presents an interactive huh.Select list of skills and returns the
-// selected option's index, or -1 if the user cancelled. If createNew is true,
-// a "Create new skill" option is prepended (returned as index -2).
+// selected option's index, PickCancelled if the user cancelled, or
+// PickCreateNew if the "Create new skill" option was selected.
 func PickSkill(title string, skills []SkillOption, createNew bool) (int, error) {
 	if len(skills) == 0 && !createNew {
-		return -1, fmt.Errorf("no skills available")
-	}
-
-	type choice struct {
-		index int
+		return PickCancelled, fmt.Errorf("no skills available")
 	}
 
 	var options []huh.Option[int]
 
 	if createNew {
 		label := SuccessStyle.Render("+ Create new skill")
-		options = append(options, huh.NewOption(label, -2))
+		options = append(options, huh.NewOption(label, PickCreateNew))
 	}
 
 	for i, s := range skills {
@@ -57,7 +59,7 @@ func PickSkill(title string, skills []SkillOption, createNew bool) (int, error) 
 		),
 	).Run()
 	if err != nil {
-		return -1, err
+		return PickCancelled, err
 	}
 
 	return selected, nil
