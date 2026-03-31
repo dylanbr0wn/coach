@@ -46,6 +46,10 @@ func runSync(cmd *cobra.Command, args []string) error {
 	}
 
 	if len(cfg.DistributeTo) == 0 {
+		fmt.Fprintln(os.Stderr, ui.Warn("No agents configured for distribution",
+			"Run 'coach setup' to get started, or set manually with 'coach config set distribute-to claude,cursor'"))
+		fmt.Fprintln(os.Stderr)
+
 		detected, detectErr := agent.DetectAgents("")
 		if detectErr != nil {
 			return fmt.Errorf("detecting agents: %w", detectErr)
@@ -220,6 +224,8 @@ func runSync(cmd *cobra.Command, args []string) error {
 		totals[distribute.StatusUpToDate],
 		totals[distribute.StatusSkipped],
 	)
+
+	fmt.Fprintln(os.Stderr, ui.NextStep("status", "verify everything looks right"))
 
 	return nil
 }
