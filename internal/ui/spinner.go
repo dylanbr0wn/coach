@@ -2,6 +2,7 @@ package ui
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
@@ -50,7 +51,9 @@ func (m spinnerModel) View() string {
 }
 
 // WithSpinner runs fn while displaying an animated spinner with the given message.
-// Returns the error from fn.
+// The spinner renders to stderr so it doesn't interfere with piped output.
+// If bubbletea fails to initialize, fn is run without a spinner as a fallback.
+// Note: fn runs exactly once — either inside bubbletea or in the fallback path.
 func WithSpinner(msg string, fn func() error) error {
 	s := spinner.New()
 	s.Spinner = spinner.Dot
@@ -62,10 +65,15 @@ func WithSpinner(msg string, fn func() error) error {
 		fn:      fn,
 	}
 
-	p := tea.NewProgram(m, tea.WithOutput(nil))
+	p := tea.NewProgram(m, tea.WithOutput(os.Stderr))
 	finalModel, err := p.Run()
 	if err != nil {
-		// Bubbletea error — fall back to running without spinner.
+		// Bubbletea failed to start — fn may not have run yet.
+		// Check if it already executed inside the program.
+		if fm, ok := finalModel.(spinnerModel); ok && fm.done {
+			return fm.err
+		}
+		// fn never ran — execute it without spinner.
 		return fn()
 	}
 
