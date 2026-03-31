@@ -87,15 +87,10 @@ func matchesFileType(fileTypes []string, filename string) bool {
 	if len(fileTypes) == 0 {
 		return true
 	}
+	base := filepath.Base(filename)
 	for _, ft := range fileTypes {
-		if matched, _ := filepath.Match(ft, filepath.Base(filename)); matched {
+		if matched, _ := filepath.Match(ft, base); matched {
 			return true
-		}
-		if strings.HasPrefix(ft, "*.") {
-			ext := ft[1:]
-			if strings.HasSuffix(filename, ext) {
-				return true
-			}
 		}
 	}
 	return false

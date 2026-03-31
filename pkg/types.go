@@ -1,6 +1,9 @@
 package pkg
 
-import "time"
+import (
+	"strings"
+	"time"
+)
 
 // Severity levels for scan findings
 type Severity int
@@ -47,8 +50,9 @@ func (s Severity) ScorePoints() int {
 }
 
 // SeverityFromString converts a string severity to the Severity type.
+// The input is case-insensitive; unrecognized values default to SeverityInfo.
 func SeverityFromString(s string) Severity {
-	switch s {
+	switch strings.ToLower(s) {
 	case "critical":
 		return SeverityCritical
 	case "high":

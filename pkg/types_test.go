@@ -14,7 +14,8 @@ func TestSeverityFromString(t *testing.T) {
 		{"info", SeverityInfo},
 		{"", SeverityInfo},
 		{"unknown", SeverityInfo},
-		{"CRITICAL", SeverityInfo}, // case-sensitive, unknown falls to info
+		{"CRITICAL", SeverityCritical}, // case-insensitive
+		{"High", SeverityHigh},         // mixed case
 	}
 	for _, tt := range tests {
 		t.Run(tt.input, func(t *testing.T) {
