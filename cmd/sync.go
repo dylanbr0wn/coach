@@ -82,7 +82,8 @@ func runSync(cmd *cobra.Command, args []string) error {
 		if saveErr := config.Save(coachDir, cfg); saveErr != nil {
 			return fmt.Errorf("saving config: %w", saveErr)
 		}
-		fmt.Printf("%s Saved distribution targets: %s\n\n", ui.SuccessStyle.Render("✓"), strings.Join(selected, ", "))
+		fmt.Println(ui.Success(fmt.Sprintf("Saved distribution targets: %s", strings.Join(selected, ", "))))
+		fmt.Println()
 	}
 
 	workDir, err := os.Getwd()
