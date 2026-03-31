@@ -28,9 +28,16 @@ var (
 var installCmd = &cobra.Command{
 	Use:   "install <source>",
 	Short: "Install skills from GitHub or local path",
-	Long:  "Fetches skills from a source, scans for security issues, and installs to detected agents.",
-	Args:  cobra.ExactArgs(1),
-	RunE:  runInstall,
+	Long: `Fetches skills from a source, scans for security issues, and installs to
+detected agents. Supports GitHub repos and local paths.
+
+See also: coach scan (security analysis), coach list (view installed skills), coach sync (distribute managed skills)`,
+	Example: `  coach install owner/repo                      # Install from GitHub
+  coach install owner/repo --list               # List available skills without installing
+  coach install owner/repo --skill my-skill     # Install a specific skill from a repo
+  coach install ./local-skills --copy           # Copy instead of symlink`,
+	Args: cobra.ExactArgs(1),
+	RunE: runInstall,
 }
 
 func init() {

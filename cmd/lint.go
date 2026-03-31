@@ -29,12 +29,10 @@ Lint checks for:
   - Body content presence
   - Common security patterns (prompt injection, dangerous commands)
 
-Use 'coach scan' for deeper security analysis with the full pattern database.
-
-Examples:
-  coach lint .                    Lint skill in current directory
-  coach lint ./my-skill           Lint a specific skill
-  coach lint ./my-skill --json    Output results as JSON`,
+See also: coach scan (deep security analysis), coach preview (render skill)`,
+	Example: `  coach lint                       # Lint all managed skills
+  coach lint ./my-skill            # Lint a specific skill
+  coach lint ./my-skill --json     # Output results as JSON`,
 	Args: cobra.MaximumNArgs(1),
 	RunE: runLint,
 }
