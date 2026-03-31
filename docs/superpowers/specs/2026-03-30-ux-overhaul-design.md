@@ -72,7 +72,7 @@ Commands that require config check for it and suggest setup:
 - `install` — checks `distribute-to` is set
 - `generate` — checks `llm-cli` is set
 
-Detection uses `ui.Warn()`:
+Detection uses `ui.Warn()` (from PR 1):
 ```
 ⚠ No agents configured for distribution
   → Run 'coach setup' to get started, or set manually with 'coach config set distribute-to claude,cursor'
