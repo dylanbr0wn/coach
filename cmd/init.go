@@ -15,12 +15,22 @@ import (
 var initCmd = &cobra.Command{
 	Use:   "init",
 	Short: "Scaffold a new skill, hook, or agent config",
+	Long: `Scaffold a new skill, hook, or agent configuration.
+
+See also: coach generate (AI-assisted authoring), coach edit (manual editing)`,
 }
 
 var initSkillCmd = &cobra.Command{
 	Use:   "skill",
 	Short: "Scaffold a new agent skill with SKILL.md",
-	RunE:  runInitSkill,
+	Long: `Interactively scaffolds a new skill with SKILL.md, optional tests/,
+scripts/, and references/ directories.
+
+See also: coach generate (AI-assisted authoring), coach edit (manual editing)`,
+	Example: `  coach init skill                  # Interactive wizard, default scope
+  coach init skill --local          # Scaffold in .coach/skills/ (project)
+  coach init skill --global         # Scaffold in ~/.coach/skills/ (global)`,
+	RunE: runInitSkill,
 }
 
 var (

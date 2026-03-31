@@ -15,8 +15,13 @@ import (
 var updateRulesCmd = &cobra.Command{
 	Use:   "update-rules",
 	Short: "Fetch latest security patterns and agent registry",
-	Long:  "Downloads updated security scanning patterns and agent detection registry from the remote rules repository.",
-	RunE:  runUpdateRules,
+	Long: `Downloads updated security scanning patterns and agent detection registry
+from the remote rules repository.
+
+See also: coach scan (uses security patterns), coach lint (uses security patterns)`,
+	Example: `  coach update-rules               # Fetch latest patterns from remote
+  coach scan                       # Run scan with updated patterns`,
+	RunE: runUpdateRules,
 }
 
 func init() {

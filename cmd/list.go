@@ -28,7 +28,14 @@ var (
 var listCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List installed skills per agent",
-	RunE:  runList,
+	Long: `Lists all skills installed in each detected agent's skill directory, showing
+name, description, path, and vetting status.
+
+See also: coach status (dashboard overview), coach install (add third-party skills)`,
+	Example: `  coach list                       # Show all agents and their skills
+  coach list --agent claude-code   # Filter to a specific agent
+  coach list --format json         # Output as JSON for scripting`,
+	RunE: runList,
 }
 
 func init() {

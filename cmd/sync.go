@@ -24,7 +24,10 @@ var (
 var syncCmd = &cobra.Command{
 	Use:   "sync",
 	Short: "Symlink managed skills into configured agent directories",
-	Long:  "Distributes skills to configured coding agents by creating symlinks in each agent's skill directory.",
+	Long: `Distributes skills to configured coding agents by creating symlinks in each
+agent's skill directory. If no targets are configured, prompts interactively.
+
+See also: coach status (dashboard overview), coach list (view installed skills)`,
 	Example: `  coach sync                # Symlink all skills to configured agents
   coach sync --dry-run      # Preview what would be linked
   coach sync -g             # Sync global skills only`,

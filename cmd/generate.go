@@ -22,14 +22,21 @@ var (
 )
 
 var generateCmd = &cobra.Command{
-	Use:   "generate <skill-name>",
+	Use:   "generate [skill-name]",
 	Short: "Author or refine a skill with LLM assistance",
-	Long:  "Uses an LLM CLI (default: claude) to interactively author or refine a SKILL.md file. Pass --prompt for a quick single-shot edit.",
-	Example: `  coach generate code-reviewer                              # Interactive: chat with LLM to author the skill
+	Long: `Uses an LLM CLI (default: claude) to interactively author or refine a SKILL.md file.
+Pass --prompt for a quick single-shot edit.
+
+If no skill name is given, an interactive picker lists managed skills plus a
+"Create new skill" option that runs the init flow first.
+
+See also: coach edit (manual editing), coach lint (validation), coach init skill (scaffolding)`,
+	Example: `  coach generate                                            # Pick a skill or create a new one
+  coach generate code-reviewer                              # Interactive: chat with LLM to author the skill
   coach generate code-reviewer -p "help review Go code"     # Single-shot: generate from a prompt
   coach generate new-skill -g                               # Create and author a new global skill
   coach generate my-skill --cli codex                       # Use a different LLM CLI`,
-	Args: cobra.ExactArgs(1),
+	Args: cobra.MaximumNArgs(1),
 	RunE: runGenerate,
 }
 
@@ -42,10 +49,41 @@ func init() {
 }
 
 func runGenerate(cmd *cobra.Command, args []string) error {
-	name := args[0]
-
 	// 1. Load config, determine CLI.
 	coachDir := config.DefaultCoachDir()
+
+	workDir, err := os.Getwd()
+	if err != nil {
+		return fmt.Errorf("getting working directory: %w", err)
+	}
+
+	r := resolve.Resolver{
+		GlobalSkillsDir: filepath.Join(coachDir, "skills"),
+		WorkDir:         workDir,
+	}
+
+	scope := resolve.ScopeAny
+	if generateGlobal {
+		scope = resolve.ScopeGlobal
+	} else if generateLocal {
+		scope = resolve.ScopeLocal
+	}
+
+	var name string
+	if len(args) > 0 {
+		name = args[0]
+	} else {
+		picked, isNew, pickErr := pickManagedSkillOrNew(&r, scope, "Select a skill to generate", true)
+		if pickErr != nil {
+			return pickErr
+		}
+		if isNew {
+			// Run init flow first, then return — user can run generate again.
+			return runInitSkill(cmd, nil)
+		}
+		name = picked
+	}
+
 	cfg, err := config.Load(coachDir)
 	if err != nil {
 		return fmt.Errorf("loading config: %w", err)
@@ -68,25 +106,7 @@ func runGenerate(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	// 3. Resolve scope from flags.
-	workDir, err := os.Getwd()
-	if err != nil {
-		return fmt.Errorf("getting working directory: %w", err)
-	}
-
-	r := resolve.Resolver{
-		GlobalSkillsDir: filepath.Join(coachDir, "skills"),
-		WorkDir:         workDir,
-	}
-
-	scope := resolve.ScopeAny
-	if generateGlobal {
-		scope = resolve.ScopeGlobal
-	} else if generateLocal {
-		scope = resolve.ScopeLocal
-	}
-
-	// 4. Try to resolve skill name.
+	// 3. Try to resolve skill name.
 	var skillPath string
 	var skillDir string
 	var existingContent string
