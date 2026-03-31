@@ -65,13 +65,13 @@ func scanAllManaged() error {
 	}
 
 	if len(managed) == 0 {
-		fmt.Println("No managed skills found.")
+		fmt.Println(ui.Warn("No managed skills found."))
 		return nil
 	}
 
 	for _, m := range managed {
 		if err := scanSingleSkill(m.Dir); err != nil {
-			fmt.Fprintf(os.Stderr, "  %s  %s: %v\n", ui.ErrorStyle.Render("✗"), m.Name, err)
+			fmt.Fprintln(os.Stderr, ui.Error(fmt.Sprintf("%s: %v", m.Name, err), ""))
 		}
 	}
 	return nil
@@ -125,13 +125,13 @@ func scanSingleSkill(path string) error {
 
 	switch result.Risk {
 	case pkg.RiskLow:
-		fmt.Println(ui.SuccessStyle.Render("  Safe to install."))
+		fmt.Println(ui.Success("Safe to install."))
 	case pkg.RiskMedium:
-		fmt.Println(ui.WarningStyle.Render("  Review warnings before installing."))
+		fmt.Println(ui.Warn("Review warnings before installing."))
 	case pkg.RiskHigh:
-		fmt.Println(ui.ErrorStyle.Render("  Manual review recommended before installing."))
+		fmt.Println(ui.Error("Manual review recommended before installing.", ""))
 	case pkg.RiskCritical:
-		fmt.Println(ui.ErrorStyle.Render("  DO NOT install without thorough review."))
+		fmt.Println(ui.Error("DO NOT install without thorough review.", ""))
 		os.Exit(1)
 	}
 	fmt.Println()
