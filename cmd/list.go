@@ -118,6 +118,11 @@ func runListWithHome(w io.Writer, home, coachDir, agentFilter, format string) er
 		return fmt.Errorf("listing managed skills: %w", err)
 	}
 
+	// Managed skills are user-authored and inherently trusted — treat as vetted.
+	for _, m := range managed {
+		provenanceMap[m.Name] = true
+	}
+
 	// Build a set of agent skill dirs for sync-status lookup
 	agentSkillNames := make(map[string][]string) // skill name -> agent names
 	for _, a := range installed {
