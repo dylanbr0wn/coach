@@ -3,8 +3,10 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/dylanbr0wn/coach/internal/config"
+	"github.com/dylanbr0wn/coach/internal/resolve"
 	"github.com/dylanbr0wn/coach/internal/rules"
 	"github.com/dylanbr0wn/coach/internal/scanner"
 	"github.com/dylanbr0wn/coach/internal/skill"
@@ -14,7 +16,7 @@ import (
 )
 
 var scanCmd = &cobra.Command{
-	Use:   "scan <path>",
+	Use:   "scan [path]",
 	Short: "Deep security analysis of a skill",
 	Long: `Deep security analysis of a skill using the full pattern database.
 
@@ -27,10 +29,11 @@ Scan performs thorough analysis including:
 Use 'coach lint' for quick spec validation during development.
 
 Examples:
-  coach scan ./my-skill           Full security scan
+  coach scan                      Scan all managed skills
+  coach scan ./my-skill           Full security scan of a specific skill
   coach scan ./my-skill --json    Output results as JSON`,
-	Args:  cobra.ExactArgs(1),
-	RunE:  runScan,
+	Args: cobra.MaximumNArgs(1),
+	RunE: runScan,
 }
 
 func init() {
@@ -38,8 +41,43 @@ func init() {
 }
 
 func runScan(cmd *cobra.Command, args []string) error {
-	path := args[0]
+	if len(args) > 0 {
+		return scanSingleSkill(args[0])
+	}
+	return scanAllManaged()
+}
 
+func scanAllManaged() error {
+	coachDir := config.DefaultCoachDir()
+	workDir, err := os.Getwd()
+	if err != nil {
+		return fmt.Errorf("getting working directory: %w", err)
+	}
+
+	r := resolve.Resolver{
+		GlobalSkillsDir: filepath.Join(coachDir, "skills"),
+		WorkDir:         workDir,
+	}
+
+	managed, err := r.List(resolve.ScopeAny)
+	if err != nil {
+		return fmt.Errorf("listing managed skills: %w", err)
+	}
+
+	if len(managed) == 0 {
+		fmt.Println("No managed skills found.")
+		return nil
+	}
+
+	for _, m := range managed {
+		if err := scanSingleSkill(m.Dir); err != nil {
+			fmt.Fprintf(os.Stderr, "  %s  %s: %v\n", ui.ErrorStyle.Render("✗"), m.Name, err)
+		}
+	}
+	return nil
+}
+
+func scanSingleSkill(path string) error {
 	s, err := skill.Parse(path)
 	if err != nil {
 		return fmt.Errorf("parsing skill at %s: %w", path, err)
@@ -57,7 +95,6 @@ func runScan(cmd *cobra.Command, args []string) error {
 
 	result := scanner.ScanSkill(s, db)
 
-	// Also scan all files in the skill directory for injection patterns
 	fileFindings := scanner.ScanSkillFiles(s, db.Patterns)
 	existingKeys := make(map[string]bool)
 	for _, f := range result.Findings {
@@ -75,7 +112,7 @@ func runScan(cmd *cobra.Command, args []string) error {
 	result.Risk = pkg.RiskLevelFromScore(result.Score)
 
 	fmt.Println()
-	fmt.Println(ui.HeadingStyle.Render("  Security Scan Report"))
+	fmt.Println(ui.HeadingStyle.Render("  Scan: deep security analysis (full pattern database)"))
 	fmt.Println()
 	fmt.Println(ui.RenderScanSummary(result))
 	fmt.Println()

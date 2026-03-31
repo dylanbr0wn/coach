@@ -70,9 +70,8 @@ func customHelp(cmd *cobra.Command, args []string) {
 	fmt.Fprintf(&b, "  1. coach init skill                         %s\n", d("Create a new skill"))
 	fmt.Fprintf(&b, "  2. coach edit <name>                        %s\n", d("Write the skill content"))
 	fmt.Fprintf(&b, "     coach generate <name>                    %s\n", d("Or use AI to author it"))
-	fmt.Fprintf(&b, "  3. coach lint <path>                        %s\n", d("Validate the skill"))
-	fmt.Fprintf(&b, "  4. coach config set distribute-to claude    %s\n", d("Configure distribution"))
-	fmt.Fprintf(&b, "  5. coach sync                               %s\n", d("Symlink skills to agents"))
+	fmt.Fprintf(&b, "  3. coach lint                               %s\n", d("Validate your skills"))
+	fmt.Fprintf(&b, "  4. coach sync                               %s\n", d("Distribute to your agents"))
 
 	fmt.Fprintf(&b, "\n%s\n", h("Flags"))
 	fmt.Fprintf(&b, "%s\n", cmd.LocalFlags().FlagUsages())

@@ -73,9 +73,6 @@ func runInitSkill(cmd *cobra.Command, args []string) error {
 				Description("What does this skill do? (max 1024 chars)").
 				Value(&description).
 				Validate(func(s string) error {
-					if s == "" {
-						return fmt.Errorf("description is required")
-					}
 					if len(s) > 1024 {
 						return fmt.Errorf("description must be 1024 characters or less")
 					}
@@ -117,8 +114,11 @@ func runInitSkill(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	// Determine scope and target directory
-	scope := "global"
+	if strings.TrimSpace(description) == "" {
+		return fmt.Errorf("description is required")
+	}
+
+	// Determine target directory
 	var dir string
 
 	workDir, err := os.Getwd()
@@ -126,22 +126,19 @@ func runInitSkill(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("getting working directory: %w", err)
 	}
 
-	if initLocal {
-		scope = "local"
+	switch {
+	case initLocal:
 		dir = filepath.Join(workDir, ".coach", "skills", name)
-	} else if initGlobal {
-		scope = "global"
+	case initGlobal:
 		dir = filepath.Join(config.DefaultCoachDir(), "skills", name)
-	} else {
+	default:
 		cfg, err := config.Load(config.DefaultCoachDir())
 		if err != nil {
 			return fmt.Errorf("loading config: %w", err)
 		}
 		if cfg.DefaultScope == "local" {
-			scope = "local"
 			dir = filepath.Join(workDir, ".coach", "skills", name)
 		} else {
-			scope = "global"
 			dir = filepath.Join(config.DefaultCoachDir(), "skills", name)
 		}
 	}
@@ -182,13 +179,16 @@ func runInitSkill(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	successMsg := lipgloss.NewStyle().Bold(true).Foreground(ui.Green).Render("✓ Created " + scope + " skill: " + dir)
-	fmt.Printf("\n%s\n\n", successMsg)
+	fmt.Println()
+	fmt.Printf("  %s Skill created: %s\n", ui.SuccessStyle.Render("✓"), name)
+	fmt.Printf("  Path: %s\n", dir)
+	fmt.Println()
 	boldStyle := lipgloss.NewStyle().Bold(true)
-	fmt.Printf("Next steps:\n")
-	fmt.Printf("  %s  # Write skill content in your editor\n", boldStyle.Render("coach edit "+name))
-	fmt.Printf("  %s      # Or use AI to author it\n", boldStyle.Render("coach generate "+name))
-	fmt.Printf("  %s        # Validate the skill\n", boldStyle.Render("coach lint "+dir))
+	fmt.Printf("  Next steps:\n")
+	fmt.Printf("    %-36s   Edit the skill\n", boldStyle.Render("coach edit "+name))
+	fmt.Printf("    %-36s   Author with AI\n", boldStyle.Render("coach generate "+name))
+	fmt.Printf("    %-36s   Validate all managed skills\n", boldStyle.Render("coach lint"))
+	fmt.Printf("    %-36s   Distribute to your agents\n", boldStyle.Render("coach sync"))
 	fmt.Println()
 
 	return nil

@@ -42,7 +42,8 @@ func matchPatterns(
 	}
 
 	for _, src := range sources {
-		for _, c := range ready {
+		for i := range ready {
+			c := &ready[i]
 			if !matchesFileType(c.pattern.FileTypes, src.filePath) {
 				continue
 			}

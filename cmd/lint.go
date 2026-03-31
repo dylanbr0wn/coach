@@ -4,8 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/dylanbr0wn/coach/internal/config"
+	"github.com/dylanbr0wn/coach/internal/resolve"
 	"github.com/dylanbr0wn/coach/internal/rules"
 	"github.com/dylanbr0wn/coach/internal/scanner"
 	"github.com/dylanbr0wn/coach/internal/skill"
@@ -33,8 +35,8 @@ Examples:
   coach lint .                    Lint skill in current directory
   coach lint ./my-skill           Lint a specific skill
   coach lint ./my-skill --json    Output results as JSON`,
-	Args:  cobra.MaximumNArgs(1),
-	RunE:  runLint,
+	Args: cobra.MaximumNArgs(1),
+	RunE: runLint,
 }
 
 func init() {
@@ -43,11 +45,48 @@ func init() {
 }
 
 func runLint(cmd *cobra.Command, args []string) error {
-	path := "."
 	if len(args) > 0 {
-		path = args[0]
+		return lintSingleSkill(args[0])
+	}
+	return lintAllManaged()
+}
+
+func lintAllManaged() error {
+	coachDir := config.DefaultCoachDir()
+	workDir, err := os.Getwd()
+	if err != nil {
+		return fmt.Errorf("getting working directory: %w", err)
 	}
 
+	r := resolve.Resolver{
+		GlobalSkillsDir: filepath.Join(coachDir, "skills"),
+		WorkDir:         workDir,
+	}
+
+	managed, err := r.List(resolve.ScopeAny)
+	if err != nil {
+		return fmt.Errorf("listing managed skills: %w", err)
+	}
+
+	if len(managed) == 0 {
+		fmt.Println("No managed skills found.")
+		return nil
+	}
+
+	var exitCode int
+	for _, m := range managed {
+		if err := lintSingleSkill(m.Dir); err != nil {
+			exitCode = 1
+		}
+	}
+
+	if exitCode != 0 {
+		os.Exit(1)
+	}
+	return nil
+}
+
+func lintSingleSkill(path string) error {
 	s, err := skill.Parse(path)
 	if err != nil {
 		return fmt.Errorf("parsing skill at %s: %w", path, err)
@@ -85,17 +124,38 @@ func runLint(cmd *cobra.Command, args []string) error {
 	}
 
 	fmt.Println()
+	fmt.Println(ui.HeadingStyle.Render("  Lint: spec compliance + basic security"))
+	fmt.Println()
 	fmt.Println(ui.RenderScanSummary(result))
 	fmt.Println()
 	fmt.Println(ui.RenderFindings(result.Findings))
 
+	counts := countFindingSeverities(result.Findings)
+	fmt.Printf("  %s  %d error(s), %d warning(s) %s\n\n",
+		ui.HeadingStyle.Render("Lint complete."),
+		counts["errors"], counts["warnings"],
+		ui.DimStyle.Render("(spec + basic security)"),
+	)
+
 	for _, f := range result.Findings {
 		if f.Severity >= pkg.SeverityHigh {
-			os.Exit(1)
+			return fmt.Errorf("high severity finding: %s", f.Name)
 		}
 	}
 
 	return nil
+}
+
+func countFindingSeverities(findings []pkg.Finding) map[string]int {
+	counts := map[string]int{"errors": 0, "warnings": 0}
+	for _, f := range findings {
+		if f.Severity >= pkg.SeverityHigh {
+			counts["errors"]++
+		} else if f.Severity >= pkg.SeverityWarning {
+			counts["warnings"]++
+		}
+	}
+	return counts
 }
 
 func outputJSON(result *pkg.ScanResult) error {

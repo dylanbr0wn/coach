@@ -16,7 +16,7 @@ var referenceSkill string
 // If referenceOverride is non-empty it is used instead of the embedded reference skill.
 // If existingContent is non-empty the prompt asks the LLM to refine the existing skill;
 // otherwise it asks the LLM to create a new skill from scratch.
-func BuildSystemPrompt(existingContent string, referenceOverride string) string {
+func BuildSystemPrompt(existingContent, referenceOverride string) string {
 	var b strings.Builder
 
 	b.WriteString("You are a skill authoring assistant. Your job is to help write and refine SKILL.md files for AI agent skills.\n\n")

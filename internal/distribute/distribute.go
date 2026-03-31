@@ -44,7 +44,7 @@ type DistResult struct {
 
 // Distribute symlinks skillDir into each installed agent's skill directory as
 // <agent.SkillDir>/<skillName>. Agents that are not installed are skipped.
-func Distribute(skillDir string, skillName string, agents []pkg.DetectedAgent) ([]DistResult, error) {
+func Distribute(skillDir, skillName string, agents []pkg.DetectedAgent) ([]DistResult, error) {
 	results := make([]DistResult, 0, len(agents))
 
 	for _, agent := range agents {
@@ -104,7 +104,8 @@ func Distribute(skillDir string, skillName string, agents []pkg.DetectedAgent) (
 	return results, nil
 }
 
-// FilterAgentsByNames returns only those agents whose Config.Name appears in names.
+// FilterAgentsByNames returns only those agents whose Key or Config.Name appears in names.
+// This allows matching by registry key (e.g., "claude-code") or display name (e.g., "Claude Code").
 func FilterAgentsByNames(agents []pkg.DetectedAgent, names []string) []pkg.DetectedAgent {
 	set := make(map[string]struct{}, len(names))
 	for _, n := range names {
@@ -114,6 +115,10 @@ func FilterAgentsByNames(agents []pkg.DetectedAgent, names []string) []pkg.Detec
 	filtered := make([]pkg.DetectedAgent, 0, len(agents))
 	for _, a := range agents {
 		if _, ok := set[a.Config.Name]; ok {
+			filtered = append(filtered, a)
+			continue
+		}
+		if _, ok := set[a.Key]; ok {
 			filtered = append(filtered, a)
 		}
 	}

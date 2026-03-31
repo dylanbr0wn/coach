@@ -9,7 +9,7 @@ import (
 )
 
 // writeSkill creates a skill directory with SKILL.md under dir/name.
-func writeSkill(t *testing.T, dir, name string) string {
+func writeSkill(t *testing.T, dir, name string) {
 	t.Helper()
 	skillDir := filepath.Join(dir, name)
 	if err := os.MkdirAll(skillDir, 0o755); err != nil {
@@ -19,7 +19,6 @@ func writeSkill(t *testing.T, dir, name string) string {
 	if err := os.WriteFile(filepath.Join(skillDir, "SKILL.md"), []byte(content), 0o644); err != nil {
 		t.Fatalf("WriteFile: %v", err)
 	}
-	return skillDir
 }
 
 // makeLocalSkillsDir creates <root>/.coach/skills and returns its path.
@@ -127,7 +126,7 @@ func TestResolveNotFound(t *testing.T) {
 	}
 	// Error should mention the skill name.
 	errMsg := err.Error()
-	if len(errMsg) == 0 {
+	if errMsg == "" {
 		t.Error("expected non-empty error message")
 	}
 }
@@ -171,7 +170,7 @@ func TestListSkills(t *testing.T) {
 
 	writeSkill(t, localSkills, "local-only")
 	writeSkill(t, localSkills, "shared")
-	writeSkill(t, globalSkills, "shared")     // shadowed by local
+	writeSkill(t, globalSkills, "shared") // shadowed by local
 	writeSkill(t, globalSkills, "global-only")
 
 	r := resolve.Resolver{
@@ -285,5 +284,42 @@ func TestTargetDir(t *testing.T) {
 	expectedGlobal := filepath.Join(globalSkills, "new-skill")
 	if globalTarget != expectedGlobal {
 		t.Errorf("TargetDir(global) = %q, want %q", globalTarget, expectedGlobal)
+	}
+}
+
+func TestListSkills_Symlinked(t *testing.T) {
+	tmp := t.TempDir()
+	globalSkills := t.TempDir()
+	realDir := t.TempDir()
+
+	// Create a real skill directory elsewhere
+	skillDir := filepath.Join(realDir, "linked-skill")
+	if err := os.MkdirAll(skillDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	content := "---\nname: linked-skill\ndescription: test skill\n---\nBody here.\n"
+	if err := os.WriteFile(filepath.Join(skillDir, "SKILL.md"), []byte(content), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	// Symlink into global skills dir
+	if err := os.Symlink(skillDir, filepath.Join(globalSkills, "linked-skill")); err != nil {
+		t.Fatal(err)
+	}
+
+	r := resolve.Resolver{
+		GlobalSkillsDir: globalSkills,
+		WorkDir:         tmp,
+	}
+
+	results, err := r.List(resolve.ScopeGlobal)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(results) != 1 {
+		t.Fatalf("got %d results, want 1", len(results))
+	}
+	if results[0].Name != "linked-skill" {
+		t.Errorf("got %q, want linked-skill", results[0].Name)
 	}
 }

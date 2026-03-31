@@ -16,7 +16,8 @@ func RenderFindings(findings []pkg.Finding) string {
 	for _, f := range findings {
 		icon := severityIcon(f.Severity)
 		style := severityStyle(f.Severity)
-		sb.WriteString(fmt.Sprintf("  %s %s\n", icon, style.Render(f.Name)))
+		tag := DimStyle.Render("[" + f.Category + "]")
+		sb.WriteString(fmt.Sprintf("  %s %s %s\n", icon, tag, style.Render(f.Name)))
 		sb.WriteString(fmt.Sprintf("    %s %s\n", DimStyle.Render(f.ID), f.Description))
 		if f.File != "" {
 			location := f.File
