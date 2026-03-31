@@ -37,52 +37,64 @@ func runUpdateRules(cmd *cobra.Command, args []string) error {
 	rulesDir := filepath.Join(coachDir, "rules")
 	repoDir := filepath.Join(rulesDir, "repo")
 
-	fmt.Printf("  Fetching rules from %s...\n", ui.DimStyle.Render(cfg.RulesSource))
+	var sha string
+	var alreadyUpToDate bool
 
-	if _, err := os.Stat(filepath.Join(repoDir, ".git")); err == nil {
-		repo, err := git.PlainOpen(repoDir)
-		if err == nil {
-			w, err := repo.Worktree()
-			if err == nil {
-				err = w.Pull(&git.PullOptions{Force: true})
-				if err != nil && err != git.NoErrAlreadyUpToDate {
+	if spinErr := ui.WithSpinner(fmt.Sprintf("Fetching rules from %s", cfg.RulesSource), func() error {
+		var fetchErr error
+		sha, alreadyUpToDate, fetchErr = fetchRules(repoDir, cfg.RulesSource)
+		return fetchErr
+	}); spinErr != nil {
+		return fmt.Errorf("fetching rules: %w", spinErr)
+	}
+
+	if alreadyUpToDate {
+		fmt.Println(ui.Success("Already up to date."))
+	} else {
+		fmt.Println(ui.Success(fmt.Sprintf("Updated to %s", sha)))
+	}
+
+	return copyRuleFiles(repoDir, rulesDir)
+}
+
+func fetchRules(repoDir, source string) (sha string, upToDate bool, err error) {
+	if _, statErr := os.Stat(filepath.Join(repoDir, ".git")); statErr == nil {
+		repo, openErr := git.PlainOpen(repoDir)
+		if openErr == nil {
+			w, wtErr := repo.Worktree()
+			if wtErr == nil {
+				pullErr := w.Pull(&git.PullOptions{Force: true})
+				if pullErr != nil && pullErr != git.NoErrAlreadyUpToDate {
 					os.RemoveAll(repoDir)
 				} else {
 					head, _ := repo.Head()
-					sha := "unknown"
+					sha = "unknown"
 					if head != nil {
 						sha = head.Hash().String()[:12]
 					}
-					if err == git.NoErrAlreadyUpToDate {
-						fmt.Printf("  %s\n", ui.SuccessStyle.Render("Already up to date."))
-					} else {
-						fmt.Printf("  %s Updated to %s\n", ui.SuccessStyle.Render("✓"), sha)
-					}
-					return copyRuleFiles(repoDir, rulesDir)
+					return sha, pullErr == git.NoErrAlreadyUpToDate, nil
 				}
 			}
 		}
 	}
 
 	os.RemoveAll(repoDir)
-	repo, err := git.PlainClone(repoDir, false, &git.CloneOptions{
-		URL:           cfg.RulesSource,
+	repo, cloneErr := git.PlainClone(repoDir, false, &git.CloneOptions{
+		URL:           source,
 		Depth:         1,
 		ReferenceName: plumbing.HEAD,
 		SingleBranch:  true,
 	})
-	if err != nil {
-		return fmt.Errorf("cloning rules repository: %w\n\n  If the rules repo doesn't exist yet, this is expected.\n  Coach will use its embedded patterns in the meantime.", err)
+	if cloneErr != nil {
+		return "", false, fmt.Errorf("cloning rules repository: %w\n\n  If the rules repo doesn't exist yet, this is expected.\n  Coach will use its embedded patterns in the meantime.", cloneErr)
 	}
 
 	head, _ := repo.Head()
-	sha := "unknown"
+	sha = "unknown"
 	if head != nil {
 		sha = head.Hash().String()[:12]
 	}
-	fmt.Printf("  %s Fetched rules at %s\n", ui.SuccessStyle.Render("✓"), sha)
-
-	return copyRuleFiles(repoDir, rulesDir)
+	return sha, false, nil
 }
 
 func copyRuleFiles(repoDir, rulesDir string) error {
@@ -105,7 +117,7 @@ func copyRuleFiles(repoDir, rulesDir string) error {
 	}
 
 	if copied > 0 {
-		fmt.Printf("  %s Updated %d rule files\n", ui.SuccessStyle.Render("✓"), copied)
+		fmt.Println(ui.Success(fmt.Sprintf("Updated %d rule files", copied)))
 	}
 	fmt.Println()
 
