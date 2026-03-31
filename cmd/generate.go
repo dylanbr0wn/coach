@@ -124,9 +124,13 @@ func runGenerate(cmd *cobra.Command, args []string) error {
 }
 
 func runSingleShot(cliPath, systemPrompt, userPrompt, skillPath, skillDir, skillName string) error {
-	output, err := llm.RunSingleShot(cliPath, systemPrompt, userPrompt)
-	if err != nil {
-		return fmt.Errorf("LLM CLI error: %w", err)
+	var output []byte
+	if spinErr := ui.WithSpinner("Generating with LLM...", func() error {
+		var llmErr error
+		output, llmErr = llm.RunSingleShot(cliPath, systemPrompt, userPrompt)
+		return llmErr
+	}); spinErr != nil {
+		return fmt.Errorf("LLM CLI error: %w", spinErr)
 	}
 
 	result := strings.TrimSpace(string(output))
@@ -146,13 +150,10 @@ func runSingleShot(cliPath, systemPrompt, userPrompt, skillPath, skillDir, skill
 	if err := os.WriteFile(skillPath, []byte(result+"\n"), 0o644); err != nil {
 		return fmt.Errorf("writing skill: %w", err)
 	}
-	fmt.Printf("  %s Skill updated: %s\n", ui.SuccessStyle.Render("✓"), skillName)
+	fmt.Println(ui.Success(fmt.Sprintf("Skill updated: %s", skillName)))
 	fmt.Printf("  Path: %s\n", skillPath)
 	fmt.Println()
-	fmt.Printf("  Next steps:\n")
-	fmt.Printf("    %-36s   Validate all managed skills\n", ui.InfoStyle.Render("coach lint"))
-	fmt.Printf("    %-36s   Distribute to your agents\n", ui.InfoStyle.Render("coach sync"))
-	fmt.Println()
+	fmt.Println(ui.NextStep("lint "+skillName, "validate before distributing"))
 
 	return lintAfterGenerate(skillDir, skillName)
 }
@@ -171,8 +172,7 @@ func runInteractive(cliPath, systemPrompt, skillDir, skillName string) error {
 func lintAfterGenerate(skillDir, skillName string) error {
 	s, parseErr := skill.Parse(skillDir)
 	if parseErr != nil {
-		fmt.Println(ui.ErrorStyle.Render(fmt.Sprintf("✗ Parse error: %v", parseErr)))
-		fmt.Printf("  Run %s to fix manually.\n", ui.InfoStyle.Render("coach edit "+skillName))
+		fmt.Println(ui.Error(fmt.Sprintf("Parse error: %v", parseErr), fmt.Sprintf("Run 'coach edit %s' to fix manually", skillName)))
 		return nil
 	}
 
@@ -180,16 +180,15 @@ func lintAfterGenerate(skillDir, skillName string) error {
 	if len(issues) > 0 {
 		fmt.Println()
 		for _, issue := range issues {
-			fmt.Println(ui.ErrorStyle.Render("  ✗ " + issue))
+			fmt.Println(ui.Error(issue, ""))
 		}
-		fmt.Printf("\n  Run %s to fix manually.\n", ui.InfoStyle.Render("coach edit "+skillName))
+		fmt.Println()
+		fmt.Println(ui.Error("Validation failed", fmt.Sprintf("Run 'coach edit %s' to fix manually", skillName)))
 		return nil
 	}
 
-	fmt.Printf("  %s %s validated successfully.\n", ui.SuccessStyle.Render("✓"), skillName)
+	fmt.Println(ui.Success(fmt.Sprintf("%s validated successfully.", skillName)))
 	fmt.Println()
-	fmt.Printf("  Next steps:\n")
-	fmt.Printf("    %-36s   Distribute to your agents\n", ui.InfoStyle.Render("coach sync"))
-	fmt.Println()
+	fmt.Println(ui.NextStep("sync", "distribute to your agents"))
 	return nil
 }
