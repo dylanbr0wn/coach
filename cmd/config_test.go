@@ -59,7 +59,7 @@ func TestConfigGetValue(t *testing.T) {
 	configPath := filepath.Join(dir, "config.yaml")
 
 	cfg := config.Config{LLMCli: "claude", DistributeTo: []string{"claude", "cursor"}}
-	if err := config.SaveTo(cfg, configPath); err != nil {
+	if err := config.SaveTo(&cfg, configPath); err != nil {
 		t.Fatal(err)
 	}
 

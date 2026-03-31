@@ -126,11 +126,12 @@ func runInitSkill(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("getting working directory: %w", err)
 	}
 
-	if initLocal {
+	switch {
+	case initLocal:
 		dir = filepath.Join(workDir, ".coach", "skills", name)
-	} else if initGlobal {
+	case initGlobal:
 		dir = filepath.Join(config.DefaultCoachDir(), "skills", name)
-	} else {
+	default:
 		cfg, err := config.Load(config.DefaultCoachDir())
 		if err != nil {
 			return fmt.Errorf("loading config: %w", err)

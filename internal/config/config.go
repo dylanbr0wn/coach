@@ -65,7 +65,7 @@ func LoadFrom(path string) (*Config, error) {
 }
 
 // SaveTo writes the config to an explicit file path.
-func SaveTo(cfg Config, path string) error {
+func SaveTo(cfg *Config, path string) error {
 	data, err := yaml.Marshal(cfg)
 	if err != nil {
 		return fmt.Errorf("marshaling config: %w", err)
@@ -80,5 +80,5 @@ func Load(coachDir string) (*Config, error) {
 
 // Save writes the config to disk.
 func Save(coachDir string, cfg *Config) error {
-	return SaveTo(*cfg, filepath.Join(coachDir, "config.yaml"))
+	return SaveTo(cfg, filepath.Join(coachDir, "config.yaml"))
 }

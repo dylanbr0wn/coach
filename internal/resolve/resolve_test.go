@@ -9,7 +9,7 @@ import (
 )
 
 // writeSkill creates a skill directory with SKILL.md under dir/name.
-func writeSkill(t *testing.T, dir, name string) string {
+func writeSkill(t *testing.T, dir, name string) {
 	t.Helper()
 	skillDir := filepath.Join(dir, name)
 	if err := os.MkdirAll(skillDir, 0o755); err != nil {
@@ -19,7 +19,6 @@ func writeSkill(t *testing.T, dir, name string) string {
 	if err := os.WriteFile(filepath.Join(skillDir, "SKILL.md"), []byte(content), 0o644); err != nil {
 		t.Fatalf("WriteFile: %v", err)
 	}
-	return skillDir
 }
 
 // makeLocalSkillsDir creates <root>/.coach/skills and returns its path.
@@ -127,7 +126,7 @@ func TestResolveNotFound(t *testing.T) {
 	}
 	// Error should mention the skill name.
 	errMsg := err.Error()
-	if len(errMsg) == 0 {
+	if errMsg == "" {
 		t.Error("expected non-empty error message")
 	}
 }

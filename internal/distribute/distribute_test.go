@@ -9,9 +9,9 @@ import (
 	"github.com/dylanbr0wn/coach/pkg"
 )
 
-func makeAgent(t *testing.T, name string, installed bool) (pkg.DetectedAgent, string) {
+func makeAgent(t *testing.T, name string, installed bool) (agent pkg.DetectedAgent, skillDir string) {
 	t.Helper()
-	skillDir := t.TempDir()
+	skillDir = t.TempDir()
 	return pkg.DetectedAgent{
 		Config: pkg.AgentConfig{
 			Name: name,

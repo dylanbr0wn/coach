@@ -70,7 +70,7 @@ func TestConfigRoundTrip(t *testing.T) {
 		DefaultScope:   "local",
 	}
 
-	if err := SaveTo(original, path); err != nil {
+	if err := SaveTo(&original, path); err != nil {
 		t.Fatalf("SaveTo: %v", err)
 	}
 
@@ -156,7 +156,7 @@ func TestSaveToCreatesFile(t *testing.T) {
 	path := filepath.Join(dir, "config.yaml")
 
 	cfg := Config{LLMCli: "claude", DefaultScope: "global"}
-	if err := SaveTo(cfg, path); err != nil {
+	if err := SaveTo(&cfg, path); err != nil {
 		t.Fatalf("SaveTo: %v", err)
 	}
 

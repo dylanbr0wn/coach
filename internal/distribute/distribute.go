@@ -44,7 +44,7 @@ type DistResult struct {
 
 // Distribute symlinks skillDir into each installed agent's skill directory as
 // <agent.SkillDir>/<skillName>. Agents that are not installed are skipped.
-func Distribute(skillDir string, skillName string, agents []pkg.DetectedAgent) ([]DistResult, error) {
+func Distribute(skillDir, skillName string, agents []pkg.DetectedAgent) ([]DistResult, error) {
 	results := make([]DistResult, 0, len(agents))
 
 	for _, agent := range agents {

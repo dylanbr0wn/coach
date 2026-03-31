@@ -20,14 +20,22 @@ func TestFullWorkflow(t *testing.T) {
 	globalDir := t.TempDir()
 	globalSkillsDir := filepath.Join(globalDir, "skills")
 	agentSkillDir := filepath.Join(homeDir, ".claude", "skills")
-	os.MkdirAll(globalSkillsDir, 0o755)
-	os.MkdirAll(agentSkillDir, 0o755)
-	os.MkdirAll(filepath.Join(homeDir, ".coach"), 0o755)
+	if err := os.MkdirAll(globalSkillsDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.MkdirAll(agentSkillDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.MkdirAll(filepath.Join(homeDir, ".coach"), 0o755); err != nil {
+		t.Fatal(err)
+	}
 
 	// Step 1: Create a skill directory with valid SKILL.md
 	skillName := "test-reviewer"
 	skillDir := filepath.Join(globalSkillsDir, skillName)
-	os.MkdirAll(skillDir, 0o755)
+	if err := os.MkdirAll(skillDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
 
 	content := `---
 name: test-reviewer
@@ -55,7 +63,9 @@ Use when the user asks to review tests or check test coverage.
 - Do not modify test files without asking
 - Do not delete existing tests
 `
-	os.WriteFile(filepath.Join(skillDir, "SKILL.md"), []byte(content), 0o644)
+	if err := os.WriteFile(filepath.Join(skillDir, "SKILL.md"), []byte(content), 0o644); err != nil {
+		t.Fatal(err)
+	}
 
 	// Step 2: Resolve the skill
 	r := resolve.Resolver{GlobalSkillsDir: globalSkillsDir, WorkDir: homeDir}
@@ -111,7 +121,7 @@ Use when the user asks to review tests or check test coverage.
 		LLMCli:       "claude",
 		DefaultScope: "global",
 	}
-	if err := config.SaveTo(cfg, configPath); err != nil {
+	if err := config.SaveTo(&cfg, configPath); err != nil {
 		t.Fatalf("SaveTo failed: %v", err)
 	}
 	loaded, err := config.LoadFrom(configPath)

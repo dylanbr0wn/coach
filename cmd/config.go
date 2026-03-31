@@ -89,7 +89,7 @@ func setConfigValue(configPath, key, value string) error {
 	if err := os.MkdirAll(filepath.Dir(configPath), 0o755); err != nil {
 		return fmt.Errorf("creating config directory: %w", err)
 	}
-	return config.SaveTo(*cfg, configPath)
+	return config.SaveTo(cfg, configPath)
 }
 
 func getConfigValue(configPath, key string) (string, error) {
