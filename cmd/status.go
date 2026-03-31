@@ -107,6 +107,12 @@ func runStatus(cmd *cobra.Command, args []string) error {
 		provenanceMap[s.Name] = true
 	}
 
+	// Managed skills are user-authored and inherently trusted — treat as vetted.
+	allManaged, _ := r.List(resolve.ScopeAny)
+	for _, m := range allManaged {
+		provenanceMap[m.Name] = true
+	}
+
 	for _, a := range installed {
 		skillNames := skill.ListSkillDirs(a.SkillDir)
 		skillCount := len(skillNames)
