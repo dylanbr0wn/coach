@@ -1,3 +1,4 @@
 coach
 *.exe
 .worktrees/
+.DS_Store
