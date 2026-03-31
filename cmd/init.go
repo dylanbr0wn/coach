@@ -179,11 +179,9 @@ func runInitSkill(cmd *cobra.Command, args []string) error {
 	}
 
 	fmt.Println()
-	fmt.Println(ui.Success(fmt.Sprintf("Skill created: %s", name)))
-	fmt.Printf("  Path: %s\n", dir)
-	fmt.Println()
-	fmt.Println(ui.NextStep(fmt.Sprintf("edit %s", name), "edit the skill manually"))
-	fmt.Println(ui.NextStep(fmt.Sprintf("generate %s", name), "author with AI"))
+	fmt.Fprintln(os.Stderr, ui.Success(fmt.Sprintf("Skill created: %s", name)))
+	fmt.Fprintf(os.Stderr, "  %s %s\n", ui.DimStyle.Render("Path:"), dir)
+	fmt.Fprintln(os.Stderr, ui.NextStep(fmt.Sprintf("generate %s", name), "flesh it out with AI, or use coach edit "+name))
 
 	return nil
 }

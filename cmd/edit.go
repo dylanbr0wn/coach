@@ -118,7 +118,8 @@ func runEdit(cmd *cobra.Command, args []string) error {
 			return nil
 		}
 
-		fmt.Println(ui.Success(fmt.Sprintf("%s saved and validated.", name)))
+		fmt.Fprintln(os.Stderr, ui.Success(fmt.Sprintf("%s saved and validated", name)))
+		fmt.Fprintln(os.Stderr, ui.NextStep(fmt.Sprintf("lint %s", name), "validate before distributing"))
 		return nil
 	}
 }

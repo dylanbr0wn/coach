@@ -56,6 +56,9 @@ func runGenerate(cmd *cobra.Command, args []string) error {
 		cliCommand = generateCLI
 	}
 	if cliCommand == "" {
+		fmt.Fprintln(os.Stderr, ui.Warn("No LLM CLI configured",
+			"Run 'coach setup' to get started, or set manually with 'coach config set llm-cli claude'"))
+		fmt.Fprintln(os.Stderr)
 		cliCommand = "claude"
 	}
 
@@ -150,10 +153,8 @@ func runSingleShot(cliPath, systemPrompt, userPrompt, skillPath, skillDir, skill
 	if err := os.WriteFile(skillPath, []byte(result+"\n"), 0o644); err != nil {
 		return fmt.Errorf("writing skill: %w", err)
 	}
-	fmt.Println(ui.Success(fmt.Sprintf("Skill updated: %s", skillName)))
-	fmt.Printf("  Path: %s\n", skillPath)
-	fmt.Println()
-	fmt.Println(ui.NextStep("lint "+skillName, "validate before distributing"))
+	fmt.Fprintln(os.Stderr, ui.Success(fmt.Sprintf("Skill updated: %s", skillName)))
+	fmt.Fprintf(os.Stderr, "  %s %s\n", ui.DimStyle.Render("Path:"), skillPath)
 
 	return lintAfterGenerate(skillDir, skillName)
 }
@@ -187,8 +188,7 @@ func lintAfterGenerate(skillDir, skillName string) error {
 		return nil
 	}
 
-	fmt.Println(ui.Success(fmt.Sprintf("%s validated successfully.", skillName)))
-	fmt.Println()
-	fmt.Println(ui.NextStep("sync", "distribute to your agents"))
+	fmt.Fprintln(os.Stderr, ui.Success(fmt.Sprintf("%s validated successfully", skillName)))
+	fmt.Fprintln(os.Stderr, ui.NextStep(fmt.Sprintf("lint %s", skillName), "validate before distributing"))
 	return nil
 }

@@ -143,6 +143,10 @@ func lintSingleSkill(path string) error {
 		}
 	}
 
+	if len(result.Findings) == 0 {
+		fmt.Fprintln(os.Stderr, ui.NextStep("sync", "distribute to your agents"))
+	}
+
 	return nil
 }
 

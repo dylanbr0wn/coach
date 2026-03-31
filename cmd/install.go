@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 
 	"github.com/charmbracelet/huh"
@@ -42,6 +43,14 @@ func init() {
 }
 
 func runInstall(cmd *cobra.Command, args []string) error {
+	coachDir := config.DefaultCoachDir()
+	cfg, cfgErr := config.Load(coachDir)
+	if cfgErr == nil && len(cfg.DistributeTo) == 0 {
+		fmt.Fprintln(os.Stderr, ui.Warn("No agents configured for distribution",
+			"Run 'coach setup' to get started, or set manually with 'coach config set distribute-to claude,cursor'"))
+		fmt.Fprintln(os.Stderr)
+	}
+
 	src, err := registry.ParseSource(args[0])
 	if err != nil {
 		return err
@@ -117,7 +126,6 @@ func runInstall(cmd *cobra.Command, args []string) error {
 		installedAgents = filtered
 	}
 
-	coachDir := config.DefaultCoachDir()
 	rulesDir := filepath.Join(coachDir, "rules")
 	db, err := rules.LoadPatterns(rulesDir)
 	if err != nil {
