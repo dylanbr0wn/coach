@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/charmbracelet/huh"
-	"github.com/charmbracelet/lipgloss"
 	"github.com/dylanbr0wn/coach/internal/config"
 	"github.com/dylanbr0wn/coach/internal/ui"
 	"github.com/spf13/cobra"
@@ -180,16 +179,11 @@ func runInitSkill(cmd *cobra.Command, args []string) error {
 	}
 
 	fmt.Println()
-	fmt.Printf("  %s Skill created: %s\n", ui.SuccessStyle.Render("✓"), name)
+	fmt.Println(ui.Success(fmt.Sprintf("Skill created: %s", name)))
 	fmt.Printf("  Path: %s\n", dir)
 	fmt.Println()
-	boldStyle := lipgloss.NewStyle().Bold(true)
-	fmt.Printf("  Next steps:\n")
-	fmt.Printf("    %-36s   Edit the skill\n", boldStyle.Render("coach edit "+name))
-	fmt.Printf("    %-36s   Author with AI\n", boldStyle.Render("coach generate "+name))
-	fmt.Printf("    %-36s   Validate all managed skills\n", boldStyle.Render("coach lint"))
-	fmt.Printf("    %-36s   Distribute to your agents\n", boldStyle.Render("coach sync"))
-	fmt.Println()
+	fmt.Println(ui.NextStep(fmt.Sprintf("edit %s", name), "edit the skill manually"))
+	fmt.Println(ui.NextStep(fmt.Sprintf("generate %s", name), "author with AI"))
 
 	return nil
 }
