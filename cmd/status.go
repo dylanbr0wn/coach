@@ -30,7 +30,7 @@ func runStatus(cmd *cobra.Command, args []string) error {
 	installed := agent.InstalledAgents(agents)
 	if len(installed) == 0 {
 		fmt.Println()
-		fmt.Println(ui.WarningStyle.Render("  No coding agents detected."))
+		fmt.Println(ui.Warn("No coding agents detected."))
 		fmt.Println(ui.DimStyle.Render("  Coach looks for Claude Code, Cursor, Codex, and Copilot."))
 		fmt.Println()
 		return nil

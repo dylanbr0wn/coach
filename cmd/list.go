@@ -81,7 +81,7 @@ func runListWithHome(w io.Writer, home, coachDir, agentFilter, format string) er
 
 	if len(installed) == 0 {
 		fmt.Fprintln(w)
-		fmt.Fprintln(w, ui.WarningStyle.Render("  No agents detected."))
+		fmt.Fprintln(w, ui.Warn("No agents detected."))
 		fmt.Fprintln(w)
 		return nil
 	}

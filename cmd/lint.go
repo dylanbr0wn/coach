@@ -69,7 +69,7 @@ func lintAllManaged() error {
 	}
 
 	if len(managed) == 0 {
-		fmt.Println("No managed skills found.")
+		fmt.Println(ui.Warn("No managed skills found."))
 		return nil
 	}
 
