@@ -171,7 +171,7 @@ func TestListSkills(t *testing.T) {
 
 	writeSkill(t, localSkills, "local-only")
 	writeSkill(t, localSkills, "shared")
-	writeSkill(t, globalSkills, "shared")     // shadowed by local
+	writeSkill(t, globalSkills, "shared") // shadowed by local
 	writeSkill(t, globalSkills, "global-only")
 
 	r := resolve.Resolver{

@@ -35,8 +35,8 @@ Examples:
   coach lint .                    Lint skill in current directory
   coach lint ./my-skill           Lint a specific skill
   coach lint ./my-skill --json    Output results as JSON`,
-	Args:  cobra.MaximumNArgs(1),
-	RunE:  runLint,
+	Args: cobra.MaximumNArgs(1),
+	RunE: runLint,
 }
 
 func init() {

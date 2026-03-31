@@ -32,8 +32,8 @@ Examples:
   coach scan                      Scan all managed skills
   coach scan ./my-skill           Full security scan of a specific skill
   coach scan ./my-skill --json    Output results as JSON`,
-	Args:  cobra.MaximumNArgs(1),
-	RunE:  runScan,
+	Args: cobra.MaximumNArgs(1),
+	RunE: runScan,
 }
 
 func init() {
