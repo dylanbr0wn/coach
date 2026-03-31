@@ -41,11 +41,13 @@ Source(s) → Discover → Evaluate → Present → Commit
 
 New package `internal/pipeline` exposes three functions. The TUI (progress bar + selection table) lives in `internal/ui/`.
 
+The `--skill <name>` flag filters Discover output before passing to Evaluate, preserving existing behavior for targeting a specific skill from a multi-skill source.
+
 ### Stage 1: Discover
 
-`Discover(sources []Source) ([]SkillCandidate, error)`
+`Discover(source Source, installed bool, agents []DetectedAgent, provenance *InstalledSkills) ([]SkillCandidate, error)`
 
-Accepts one or more sources and returns a flat list of candidates. Three discovery modes:
+When `installed` is true, ignores `source` and audits agent skill directories instead. Otherwise, discovers from the given source. Returns a flat list of candidates. Three discovery modes:
 
 **Local path:**
 - Resolve to absolute path
@@ -142,7 +144,7 @@ Bubble Tea model with two phases.
 Uses `bubbles/progress`. Displays during the Evaluate stage:
 
 ```
- Installing skills from /vault/skills/
+ Evaluating skills from /vault/skills/
 
  ████████████████░░░░░░░░░░  14/18
 
