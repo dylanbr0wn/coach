@@ -19,9 +19,13 @@ var validConfigKeys = map[string]bool{
 var configCmd = &cobra.Command{
 	Use:   "config",
 	Short: "Get and set Coach configuration values",
-	Long:  "Manage Coach configuration. Use 'config set' to update values and 'config get' to read them.",
+	Long: `Manage Coach configuration. Use 'config set' to update values and 'config get'
+to read them. Configuration is stored in ~/.coach/config.yaml.
+
+See also: coach status (dashboard overview), coach sync (uses distribute-to config)`,
 	Example: `  coach config set distribute-to claude,cursor    # Set distribution targets
   coach config set llm-cli claude                  # Set default LLM CLI
+  coach config set default-scope local             # Default to local project skills
   coach config get distribute-to                   # Show current value`,
 }
 

@@ -1,7 +1,6 @@
 package ui
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/charmbracelet/lipgloss"
@@ -56,16 +55,3 @@ func RenderTable(headers []string, rows []TableRow) string {
 	return sb.String()
 }
 
-func RenderStatusSummary(unvetted, outdated int) string {
-	var lines []string
-	if unvetted > 0 {
-		lines = append(lines, WarningStyle.Render(fmt.Sprintf("  ⚠ %d unvetted skills found — run coach scan to review", unvetted)))
-	}
-	if outdated > 0 {
-		lines = append(lines, WarningStyle.Render(fmt.Sprintf("  ⚠ %d outdated skills — run coach install --update to refresh", outdated)))
-	}
-	if len(lines) == 0 {
-		lines = append(lines, SuccessStyle.Render("  All skills vetted and up to date"))
-	}
-	return strings.Join(lines, "\n")
-}

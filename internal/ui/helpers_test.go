@@ -16,12 +16,31 @@ func TestSuccess(t *testing.T) {
 }
 
 func TestWarn(t *testing.T) {
-	got := Warn("No agents configured")
+	got := Warn("No agents configured", "")
 	if !strings.Contains(got, "⚠") {
 		t.Errorf("Warn() missing warning icon, got: %q", got)
 	}
 	if !strings.Contains(got, "No agents configured") {
 		t.Errorf("Warn() missing message, got: %q", got)
+	}
+	if strings.Contains(got, "→") {
+		t.Errorf("Warn() with empty hint should not contain arrow, got: %q", got)
+	}
+}
+
+func TestWarnWithHint(t *testing.T) {
+	got := Warn("No agents configured", "Run 'coach setup' to get started")
+	if !strings.Contains(got, "⚠") {
+		t.Errorf("Warn() missing warning icon, got: %q", got)
+	}
+	if !strings.Contains(got, "No agents configured") {
+		t.Errorf("Warn() missing message, got: %q", got)
+	}
+	if !strings.Contains(got, "→") {
+		t.Errorf("Warn() with hint missing arrow, got: %q", got)
+	}
+	if !strings.Contains(got, "Run 'coach setup'") {
+		t.Errorf("Warn() missing hint, got: %q", got)
 	}
 }
 
