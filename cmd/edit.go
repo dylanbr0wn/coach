@@ -23,13 +23,19 @@ var (
 )
 
 var editCmd = &cobra.Command{
-	Use:   "edit <skill-name>",
+	Use:   "edit [skill-name]",
 	Short: "Open a skill in $EDITOR with lint-on-close",
-	Long:  "Opens a skill file in your editor and validates it after you save and close. If validation issues are found, you can re-open to fix them.",
-	Example: `  coach edit code-reviewer          # Open in $EDITOR, lint on save
+	Long: `Opens a skill file in your editor and validates it after you save and close.
+If validation issues are found, you can re-open to fix them.
+
+If no skill name is given, an interactive picker lists all managed skills.
+
+See also: coach generate (AI-assisted authoring), coach lint (validation)`,
+	Example: `  coach edit                        # Pick from managed skills interactively
+  coach edit code-reviewer          # Open in $EDITOR, lint on save
   coach edit code-reviewer -g       # Edit the global version
   coach edit deploy-check -l        # Edit the local (project) version`,
-	Args: cobra.ExactArgs(1),
+	Args: cobra.MaximumNArgs(1),
 	RunE: runEdit,
 }
 
@@ -40,8 +46,6 @@ func init() {
 }
 
 func runEdit(cmd *cobra.Command, args []string) error {
-	name := args[0]
-
 	editor, err := getEditor()
 	if err != nil {
 		return fmt.Errorf("no editor found (%w): set $EDITOR or $VISUAL environment variable", err)
@@ -63,6 +67,17 @@ func runEdit(cmd *cobra.Command, args []string) error {
 		scope = resolve.ScopeGlobal
 	} else if editLocal {
 		scope = resolve.ScopeLocal
+	}
+
+	var name string
+	if len(args) > 0 {
+		name = args[0]
+	} else {
+		picked, pickErr := pickManagedSkill(&r, scope, "Select a skill to edit")
+		if pickErr != nil {
+			return pickErr
+		}
+		name = picked
 	}
 
 	result, err := r.Resolve(name, scope)
@@ -119,7 +134,8 @@ func runEdit(cmd *cobra.Command, args []string) error {
 			return nil
 		}
 
-		fmt.Println(ui.Success(fmt.Sprintf("%s saved and validated.", name)))
+		fmt.Fprintln(os.Stderr, ui.Success(fmt.Sprintf("%s saved and validated", name)))
+		fmt.Fprintln(os.Stderr, ui.NextStep(fmt.Sprintf("lint %s", name), "validate before distributing"))
 		return nil
 	}
 }

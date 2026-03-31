@@ -29,7 +29,14 @@ var (
 var listCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List installed skills per agent",
-	RunE:  runList,
+	Long: `Lists all skills installed in each detected agent's skill directory, showing
+name, description, path, and vetting status.
+
+See also: coach status (dashboard overview), coach install (add third-party skills)`,
+	Example: `  coach list                       # Show all agents and their skills
+  coach list --agent claude-code   # Filter to a specific agent
+  coach list --format json         # Output as JSON for scripting`,
+	RunE: runList,
 }
 
 func init() {
@@ -82,7 +89,7 @@ func runListWithHome(w io.Writer, home, coachDir, agentFilter, format string) er
 
 	if len(installed) == 0 {
 		fmt.Fprintln(w)
-		fmt.Fprintln(w, ui.Warn("No agents detected."))
+		fmt.Fprintln(w, ui.Warn("No agents detected.", ""))
 		fmt.Fprintln(w)
 		return nil
 	}

@@ -9,16 +9,26 @@ import (
 	"github.com/charmbracelet/glamour"
 	"github.com/spf13/cobra"
 
+	"github.com/dylanbr0wn/coach/internal/config"
+	"github.com/dylanbr0wn/coach/internal/resolve"
 	"github.com/dylanbr0wn/coach/internal/skill"
 	"github.com/dylanbr0wn/coach/internal/ui"
 )
 
 var previewCmd = &cobra.Command{
-	Use:   "preview <path>",
+	Use:   "preview [path]",
 	Short: "Render a SKILL.md in the terminal",
-	Long:  "Shows parsed frontmatter, rendered markdown body, and file tree — exactly what an agent would see when the skill activates.",
-	Args:  cobra.ExactArgs(1),
-	RunE:  runPreview,
+	Long: `Shows parsed frontmatter, rendered markdown body, and file tree — exactly
+what an agent would see when the skill activates.
+
+If no path is given, an interactive picker lists all managed skills.
+
+See also: coach edit (open in editor), coach lint (validation)`,
+	Example: `  coach preview                    # Pick from managed skills interactively
+  coach preview ./my-skill         # Preview a specific skill directory
+  coach preview ~/.coach/skills/x  # Preview a global skill by path`,
+	Args: cobra.MaximumNArgs(1),
+	RunE: runPreview,
 }
 
 func init() {
@@ -26,7 +36,29 @@ func init() {
 }
 
 func runPreview(cmd *cobra.Command, args []string) error {
-	path := args[0]
+	var path string
+	if len(args) > 0 {
+		path = args[0]
+	} else {
+		coachDir := config.DefaultCoachDir()
+		workDir, wdErr := os.Getwd()
+		if wdErr != nil {
+			return fmt.Errorf("getting working directory: %w", wdErr)
+		}
+		r := resolve.Resolver{
+			GlobalSkillsDir: filepath.Join(coachDir, "skills"),
+			WorkDir:         workDir,
+		}
+		name, pickErr := pickManagedSkill(&r, resolve.ScopeAny, "Select a skill to preview")
+		if pickErr != nil {
+			return pickErr
+		}
+		result, err := r.Resolve(name, resolve.ScopeAny)
+		if err != nil {
+			return err
+		}
+		path = result.Dir
+	}
 
 	s, err := skill.Parse(path)
 	if err != nil {

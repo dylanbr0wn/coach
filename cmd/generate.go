@@ -23,14 +23,21 @@ var (
 )
 
 var generateCmd = &cobra.Command{
-	Use:   "generate <skill-name>",
+	Use:   "generate [skill-name]",
 	Short: "Author or refine a skill with LLM assistance",
-	Long:  "Uses an LLM CLI (default: claude) to interactively author or refine a SKILL.md file. Pass --prompt for a quick single-shot edit.",
-	Example: `  coach generate code-reviewer                              # Interactive: chat with LLM to author the skill
+	Long: `Uses an LLM CLI (default: claude) to interactively author or refine a SKILL.md file.
+Pass --prompt for a quick single-shot edit.
+
+If no skill name is given, an interactive picker lists managed skills plus a
+"Create new skill" option that runs the init flow first.
+
+See also: coach edit (manual editing), coach lint (validation), coach init skill (scaffolding)`,
+	Example: `  coach generate                                            # Pick a skill or create a new one
+  coach generate code-reviewer                              # Interactive: chat with LLM to author the skill
   coach generate code-reviewer -p "help review Go code"     # Single-shot: generate from a prompt
   coach generate new-skill -g                               # Create and author a new global skill
   coach generate my-skill --cli codex                       # Use a different LLM CLI`,
-	Args: cobra.ExactArgs(1),
+	Args: cobra.MaximumNArgs(1),
 	RunE: runGenerate,
 }
 
@@ -43,30 +50,9 @@ func init() {
 }
 
 func runGenerate(cmd *cobra.Command, args []string) error {
-	name := args[0]
-
 	// 1. Load config, determine CLI.
 	coachDir := config.DefaultCoachDir()
-	cfg, err := config.Load(coachDir)
-	if err != nil {
-		return fmt.Errorf("loading config: %w", err)
-	}
 
-	cliCommand := cfg.LLMCli
-	if generateCLI != "" {
-		cliCommand = generateCLI
-	}
-	if cliCommand == "" {
-		cliCommand = "claude"
-	}
-
-	// 2. FindCLI to verify it exists.
-	cliPath, err := llm.FindCLI(cliCommand)
-	if err != nil {
-		return err
-	}
-
-	// 3. Resolve scope from flags.
 	workDir, err := os.Getwd()
 	if err != nil {
 		return fmt.Errorf("getting working directory: %w", err)
@@ -84,7 +70,43 @@ func runGenerate(cmd *cobra.Command, args []string) error {
 		scope = resolve.ScopeLocal
 	}
 
-	// 4. Try to resolve skill name.
+	var name string
+	if len(args) > 0 {
+		name = args[0]
+	} else {
+		picked, isNew, pickErr := pickManagedSkillOrNew(&r, scope, "Select a skill to generate", true)
+		if pickErr != nil {
+			return pickErr
+		}
+		if isNew {
+			return runInitSkill(cmd, nil)
+		}
+		name = picked
+	}
+
+	cfg, err := config.Load(coachDir)
+	if err != nil {
+		return fmt.Errorf("loading config: %w", err)
+	}
+
+	cliCommand := cfg.LLMCli
+	if generateCLI != "" {
+		cliCommand = generateCLI
+	}
+	if cliCommand == "" {
+		fmt.Fprintln(os.Stderr, ui.Warn("No LLM CLI configured",
+			"Run 'coach setup' to get started, or set manually with 'coach config set llm-cli claude'"))
+		fmt.Fprintln(os.Stderr)
+		cliCommand = "claude"
+	}
+
+	// 2. FindCLI to verify it exists.
+	cliPath, err := llm.FindCLI(cliCommand)
+	if err != nil {
+		return err
+	}
+
+	// 3. Try to resolve skill name.
 	var skillPath string
 	var skillDir string
 	var existingContent string
@@ -151,10 +173,8 @@ func runSingleShot(cliPath, systemPrompt, userPrompt, skillPath, skillDir, skill
 	if err := os.WriteFile(skillPath, []byte(result+"\n"), 0o644); err != nil {
 		return fmt.Errorf("writing skill: %w", err)
 	}
-	fmt.Println(ui.Success(fmt.Sprintf("Skill updated: %s", skillName)))
-	fmt.Printf("  Path: %s\n", skillPath)
-	fmt.Println()
-	fmt.Println(ui.NextStep("lint "+skillName, "validate before distributing"))
+	fmt.Fprintln(os.Stderr, ui.Success(fmt.Sprintf("Skill updated: %s", skillName)))
+	fmt.Fprintf(os.Stderr, "  %s %s\n", ui.DimStyle.Render("Path:"), skillPath)
 
 	return lintAfterGenerate(skillDir, skillName)
 }
@@ -188,8 +208,7 @@ func lintAfterGenerate(skillDir, skillName string) error {
 		return nil
 	}
 
-	fmt.Println(ui.Success(fmt.Sprintf("%s validated successfully.", skillName)))
-	fmt.Println()
-	fmt.Println(ui.NextStep("sync", "distribute to your agents"))
+	fmt.Fprintln(os.Stderr, ui.Success(fmt.Sprintf("%s validated successfully", skillName)))
+	fmt.Fprintln(os.Stderr, ui.NextStep(fmt.Sprintf("lint %s", skillName), "validate before distributing"))
 	return nil
 }

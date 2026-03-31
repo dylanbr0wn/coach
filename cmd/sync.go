@@ -25,7 +25,10 @@ var (
 var syncCmd = &cobra.Command{
 	Use:   "sync",
 	Short: "Symlink managed skills into configured agent directories",
-	Long:  "Distributes skills to configured coding agents by creating symlinks in each agent's skill directory.",
+	Long: `Distributes skills to configured coding agents by creating symlinks in each
+agent's skill directory. If no targets are configured, prompts interactively.
+
+See also: coach status (dashboard overview), coach list (view installed skills)`,
 	Example: `  coach sync                # Symlink all skills to configured agents
   coach sync --dry-run      # Preview what would be linked
   coach sync -g             # Sync global skills only`,
@@ -47,6 +50,10 @@ func runSync(cmd *cobra.Command, args []string) error {
 	}
 
 	if len(cfg.DistributeTo) == 0 {
+		fmt.Fprintln(os.Stderr, ui.Warn("No agents configured for distribution",
+			"Run 'coach setup' to get started, or set manually with 'coach config set distribute-to claude,cursor'"))
+		fmt.Fprintln(os.Stderr)
+
 		detected, detectErr := agent.DetectAgents("")
 		if detectErr != nil {
 			return fmt.Errorf("detecting agents: %w", detectErr)
@@ -221,6 +228,8 @@ func runSync(cmd *cobra.Command, args []string) error {
 		totals[distribute.StatusUpToDate],
 		totals[distribute.StatusSkipped],
 	)
+
+	fmt.Fprintln(os.Stderr, ui.NextStep("status", "verify everything looks right"))
 
 	return nil
 }

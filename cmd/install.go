@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 
 	"github.com/charmbracelet/huh"
@@ -28,9 +29,16 @@ var (
 var installCmd = &cobra.Command{
 	Use:   "install <source>",
 	Short: "Install skills from GitHub or local path",
-	Long:  "Fetches skills from a source, scans for security issues, and installs to detected agents.",
-	Args:  cobra.ExactArgs(1),
-	RunE:  runInstall,
+	Long: `Fetches skills from a source, scans for security issues, and installs to
+detected agents. Supports GitHub repos and local paths.
+
+See also: coach scan (security analysis), coach list (view installed skills), coach sync (distribute managed skills)`,
+	Example: `  coach install owner/repo                      # Install from GitHub
+  coach install owner/repo --list               # List available skills without installing
+  coach install owner/repo --skill my-skill     # Install a specific skill from a repo
+  coach install ./local-skills --copy           # Copy instead of symlink`,
+	Args: cobra.ExactArgs(1),
+	RunE: runInstall,
 }
 
 func init() {
@@ -43,6 +51,14 @@ func init() {
 }
 
 func runInstall(cmd *cobra.Command, args []string) error {
+	coachDir := config.DefaultCoachDir()
+	cfg, cfgErr := config.Load(coachDir)
+	if cfgErr == nil && len(cfg.DistributeTo) == 0 {
+		fmt.Fprintln(os.Stderr, ui.Warn("No agents configured for distribution",
+			"Run 'coach setup' to get started, or set manually with 'coach config set distribute-to claude,cursor'"))
+		fmt.Fprintln(os.Stderr)
+	}
+
 	src, err := registry.ParseSource(args[0])
 	if err != nil {
 		return err
@@ -118,7 +134,6 @@ func runInstall(cmd *cobra.Command, args []string) error {
 		installedAgents = filtered
 	}
 
-	coachDir := config.DefaultCoachDir()
 	rulesDir := filepath.Join(coachDir, "rules")
 	db, err := rules.LoadPatterns(rulesDir)
 	if err != nil {
