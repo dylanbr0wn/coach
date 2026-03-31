@@ -65,7 +65,7 @@ func scanAllManaged() error {
 	}
 
 	if len(managed) == 0 {
-		fmt.Println(ui.Warn("No managed skills found."))
+		fmt.Println(ui.Warn("No managed skills found.", ""))
 		return nil
 	}
 
@@ -127,7 +127,7 @@ func scanSingleSkill(path string) error {
 	case pkg.RiskLow:
 		fmt.Println(ui.Success("Safe to install."))
 	case pkg.RiskMedium:
-		fmt.Println(ui.Warn("Review warnings before installing."))
+		fmt.Println(ui.Warn("Review warnings before installing.", ""))
 	case pkg.RiskHigh:
 		fmt.Println(ui.Error("Manual review recommended before installing.", ""))
 	case pkg.RiskCritical:
