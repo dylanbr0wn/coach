@@ -18,13 +18,13 @@ type spinnerModel struct {
 	err     error
 }
 
-func (m spinnerModel) Init() tea.Cmd {
+func (m *spinnerModel) Init() tea.Cmd {
 	return tea.Batch(m.spinner.Tick, func() tea.Msg {
 		return errMsg{err: m.fn()}
 	})
 }
 
-func (m spinnerModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m *spinnerModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case errMsg:
 		m.err = msg.err
@@ -43,7 +43,7 @@ func (m spinnerModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-func (m spinnerModel) View() string {
+func (m *spinnerModel) View() string {
 	if m.done {
 		return ""
 	}
@@ -59,7 +59,7 @@ func WithSpinner(msg string, fn func() error) error {
 	s.Spinner = spinner.Dot
 	s.Style = InfoStyle
 
-	m := spinnerModel{
+	m := &spinnerModel{
 		spinner: s,
 		msg:     msg,
 		fn:      fn,
@@ -70,12 +70,12 @@ func WithSpinner(msg string, fn func() error) error {
 	if err != nil {
 		// Bubbletea failed to start — fn may not have run yet.
 		// Check if it already executed inside the program.
-		if fm, ok := finalModel.(spinnerModel); ok && fm.done {
+		if fm, ok := finalModel.(*spinnerModel); ok && fm.done {
 			return fm.err
 		}
 		// fn never ran — execute it without spinner.
 		return fn()
 	}
 
-	return finalModel.(spinnerModel).err
+	return finalModel.(*spinnerModel).err
 }
