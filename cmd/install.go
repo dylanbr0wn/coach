@@ -5,6 +5,8 @@ import (
 	"path/filepath"
 
 	"github.com/charmbracelet/huh"
+	"github.com/spf13/cobra"
+
 	"github.com/dylanbr0wn/coach/internal/agent"
 	"github.com/dylanbr0wn/coach/internal/config"
 	"github.com/dylanbr0wn/coach/internal/registry"
@@ -13,7 +15,6 @@ import (
 	"github.com/dylanbr0wn/coach/internal/skill"
 	"github.com/dylanbr0wn/coach/internal/ui"
 	"github.com/dylanbr0wn/coach/pkg"
-	"github.com/spf13/cobra"
 )
 
 var (

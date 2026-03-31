@@ -6,8 +6,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/dylanbr0wn/coach/internal/config"
 	"github.com/spf13/cobra"
+
+	"github.com/dylanbr0wn/coach/internal/config"
 )
 
 var validConfigKeys = map[string]bool{

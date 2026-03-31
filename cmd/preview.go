@@ -7,9 +7,10 @@ import (
 	"strings"
 
 	"github.com/charmbracelet/glamour"
+	"github.com/spf13/cobra"
+
 	"github.com/dylanbr0wn/coach/internal/skill"
 	"github.com/dylanbr0wn/coach/internal/ui"
-	"github.com/spf13/cobra"
 )
 
 var previewCmd = &cobra.Command{

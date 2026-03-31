@@ -49,36 +49,31 @@ func TestScanMaliciousSkill(t *testing.T) {
 		t.Error("expected malicious skill to have risk > LOW")
 	}
 
-	hasInjection := false
-	for _, f := range result.Findings {
-		if f.Category == "prompt-injection" {
-			hasInjection = true
-			break
+	t.Run("has prompt-injection finding", func(t *testing.T) {
+		hasInjection := false
+		for _, f := range result.Findings {
+			if f.Category == "prompt-injection" {
+				hasInjection = true
+				break
+			}
 		}
-	}
-	if !hasInjection {
-		t.Error("expected at least one prompt-injection finding")
-	}
-}
-
-func TestScanMaliciousScripts(t *testing.T) {
-	s, err := skill.Parse(filepath.Join(testdataDir(), "malicious_skill"))
-	if err != nil {
-		t.Fatalf("Parse error: %v", err)
-	}
-	db := loadTestPatterns(t)
-	result := ScanSkill(s, db)
-
-	hasScriptDanger := false
-	for _, f := range result.Findings {
-		if f.Category == "script-danger" {
-			hasScriptDanger = true
-			break
+		if !hasInjection {
+			t.Error("expected at least one prompt-injection finding")
 		}
-	}
-	if !hasScriptDanger {
-		t.Error("expected at least one script-danger finding")
-	}
+	})
+
+	t.Run("has script-danger finding", func(t *testing.T) {
+		hasScriptDanger := false
+		for _, f := range result.Findings {
+			if f.Category == "script-danger" {
+				hasScriptDanger = true
+				break
+			}
+		}
+		if !hasScriptDanger {
+			t.Error("expected at least one script-danger finding")
+		}
+	})
 }
 
 func TestScoreCalculation(t *testing.T) {
@@ -90,7 +85,7 @@ func TestScoreCalculation(t *testing.T) {
 	score := CalculateScore(findings)
 
 	if score != 75 {
-		t.Errorf("score = %d, want 75", score)
+		t.Errorf("CalculateScore(%v) = %d, want 75", findings, score)
 	}
 }
 
@@ -104,7 +99,7 @@ func TestScoreCapsAt100(t *testing.T) {
 	score := CalculateScore(findings)
 
 	if score > 100 {
-		t.Errorf("score = %d, should be capped at 100", score)
+		t.Errorf("CalculateScore(%v) = %d, want <= 100", findings, score)
 	}
 }
 
@@ -117,7 +112,7 @@ func TestScoreDuplicatesCappedAt2x(t *testing.T) {
 	score := CalculateScore(findings)
 
 	if score != 60 {
-		t.Errorf("score = %d, want 60 (capped at 2x for same pattern)", score)
+		t.Errorf("CalculateScore(%v) = %d, want 60 (capped at 2x for same pattern)", findings, score)
 	}
 }
 
@@ -129,20 +124,26 @@ func TestQualityWarnings(t *testing.T) {
 	}
 	findings := CheckQuality(s)
 
-	hasNoTools := false
-	hasShortDesc := false
-	for _, f := range findings {
-		if f.ID == "QW-001" {
-			hasNoTools = true
-		}
-		if f.ID == "QW-002" {
-			hasShortDesc = true
-		}
+	tests := []struct {
+		name string
+		id   string
+	}{
+		{"missing allowed-tools", "QW-001"},
+		{"short description", "QW-002"},
 	}
-	if !hasNoTools {
-		t.Error("expected QW-001 (missing allowed-tools) finding")
-	}
-	if !hasShortDesc {
-		t.Error("expected QW-002 (short description) finding")
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			found := false
+			for _, f := range findings {
+				if f.ID == tt.id {
+					found = true
+					break
+				}
+			}
+			if !found {
+				t.Errorf("expected finding %s (%s)", tt.id, tt.name)
+			}
+		})
 	}
 }

@@ -40,10 +40,10 @@ var (
 // Returns true for empty input, "y", or "yes" (case-insensitive).
 func PromptYesNo(prompt string) bool {
 	fmt.Print(prompt)
-	scanner := bufio.NewScanner(os.Stdin)
-	if !scanner.Scan() {
+	sc := bufio.NewScanner(os.Stdin)
+	if !sc.Scan() {
 		return false
 	}
-	answer := strings.TrimSpace(strings.ToLower(scanner.Text()))
+	answer := strings.TrimSpace(strings.ToLower(sc.Text()))
 	return answer == "" || answer == "y" || answer == "yes"
 }

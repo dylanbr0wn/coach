@@ -71,7 +71,7 @@ func TestDetectAgents_HasKey(t *testing.T) {
 	}
 }
 
-func TestResolveSkillDir(t *testing.T) {
+func TestResolveHomePath(t *testing.T) {
 	result := resolveHomePath("~/.claude/skills/", "/Users/test")
 	expected := "/Users/test/.claude/skills/"
 	if result != expected {
