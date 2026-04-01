@@ -100,7 +100,7 @@ func TestInstallSkill_Overwrite(t *testing.T) {
 func TestRecordInstall(t *testing.T) {
 	coachDir := t.TempDir()
 
-	err := RecordInstall(coachDir, "test-skill", "owner/repo", "abc123", 25, []string{"claude-code"})
+	err := RecordInstall(coachDir, "test-skill", "owner/repo", "abc123", "", 25, []string{"claude-code"})
 	if err != nil {
 		t.Fatalf("RecordInstall() error: %v", err)
 	}
@@ -129,7 +129,7 @@ func TestRecordInstall(t *testing.T) {
 	}
 
 	// Record again — should update, not duplicate.
-	err = RecordInstall(coachDir, "test-skill", "owner/repo", "def456", 30, []string{"claude-code"})
+	err = RecordInstall(coachDir, "test-skill", "owner/repo", "def456", "", 30, []string{"claude-code"})
 	if err != nil {
 		t.Fatalf("RecordInstall(update) error: %v", err)
 	}

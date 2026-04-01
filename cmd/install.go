@@ -188,7 +188,7 @@ func runInstall(cmd *cobra.Command, args []string) error {
 		}
 
 		if len(installedTo) > 0 {
-			if err := registry.RecordInstall(coachDir, s.Name, src.Raw, sha, result.Score, installedTo); err != nil {
+			if err := registry.RecordInstall(coachDir, s.Name, src.Raw, sha, "", result.Score, installedTo); err != nil {
 				fmt.Println(ui.Error(fmt.Sprintf("Failed to record install: %v", err), ""))
 			}
 		}

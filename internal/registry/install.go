@@ -40,7 +40,7 @@ func InstallSkill(srcDir, agentSkillDir string, opts InstallOptions) error {
 	return os.Symlink(absSrc, destDir)
 }
 
-func RecordInstall(coachDir, name, source, sha string, score int, agents []string) error {
+func RecordInstall(coachDir, name, source, sha, contentHash string, score int, agents []string) error {
 	provenance, err := LoadProvenance(coachDir)
 	if err != nil {
 		provenance = &InstalledSkills{}
@@ -52,6 +52,7 @@ func RecordInstall(coachDir, name, source, sha string, score int, agents []strin
 		CommitSHA:   sha,
 		InstallDate: time.Now(),
 		RiskScore:   score,
+		ContentHash: contentHash,
 		Agents:      agents,
 	})
 
