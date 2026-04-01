@@ -167,7 +167,8 @@ type InstalledSkill struct {
 	CommitSHA   string    `yaml:"commit_sha"`
 	InstallDate time.Time `yaml:"install_date"`
 	RiskScore   int       `yaml:"risk_score"`
-	Agents      []string  `yaml:"agents"` // Which agents it was installed to
+	ContentHash string    `yaml:"content_hash,omitempty"` // SHA-256 of SKILL.md at install time
+	Agents      []string  `yaml:"agents"`                 // Which agents it was installed to
 }
 
 // Pattern is a single security detection rule.
